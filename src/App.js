@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import EditProfile from "./pages/User/EditProfile";
 import AdminEditProfile from "./pages/Admin/AdminEditProfile";
 import AdManagement from "./pages/Admin/AdManagement";
+import UserManagement from "./pages/Admin/UserManagement";
 
 
 
@@ -29,6 +30,7 @@ function App() {
             <Route path="/user/edit-profile" element={<EditProfile />} />
             <Route path="/admin/edit-profile" element={<AdminEditProfile />} />
             <Route path="/admin/ad-management" element={<AdManagement />} />
+            <Route path="/admin/user-management" element={<UserManagement />} />
         </Routes>
       </main>
       <Footer />
