@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { PlusIcon, UserIcon, MenuIcon, XIcon } from "@heroicons/react/solid";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/footer/logo1.png";
-import { useNavigate } from "react-router-dom";
 
 const Header = () => {
     const navigate = useNavigate();
@@ -13,9 +12,7 @@ const Header = () => {
 
     useEffect(() => {
         const userData = localStorage.getItem("user");
-        if (userData) {
-            setUser(JSON.parse(userData));
-        }
+        if (userData) setUser(JSON.parse(userData));
     }, []);
 
     const handleLogout = () => {
@@ -26,117 +23,136 @@ const Header = () => {
     };
 
     return (
-        <header className="bg-blue-950 text-white p-4 flex justify-between items-center">
-            {/* Logo Section */}
-            <div className="flex items-center space-x-2 text-xl font-bold">
-                <img src={logo} alt="Bodo App Logo" className="h-10 w-auto" />
-                <span>ACCOMATE</span>
-            </div>
-
-            {/* Mobile Menu Icon */}
-            <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden flex items-center text-white"
-            >
-                {isMobileMenuOpen ? (
-                    <XIcon className="h-6 w-6" />
-                ) : (
-                    <MenuIcon className="h-6 w-6" />
-                )}
-            </button>
-
-            {/* Desktop Navigation */}
-            <nav
-                className={`${
-                    isMobileMenuOpen ? "block" : "hidden"
-                } md:flex md:space-x-4 md:items-center w-full md:w-auto md:static absolute top-16 left-0 bg-blue-950 md:bg-transparent`}
-            >
-                <a href="/" className="block px-4 py-2 md:py-0 hover:text-yellow-400">
-                    Home
-                </a>
-                <a href="" className="block px-4 py-2 md:py-0 hover:text-yellow-400">
-                    Rooms
-                </a>
-                <a href="" className="block px-4 py-2 md:py-0 hover:text-yellow-400">
-                    Annex
-                </a>
-                <a href="" className="block px-4 py-2 md:py-0 hover:text-yellow-400">
-                    House
-                </a>
-            </nav>
-
-            {/* Right-side Profile & Post Ad Button */}
-            <div className="flex items-center space-x-4">
-                {/* Post Ad Button */}
-                <Link
-                    to=""
-                    className="hidden md:flex bg-yellow-500 text-white py-2 px-4 rounded-full hover:bg-yellow-400 items-center space-x-2"
-                >
-                    <PlusIcon className="h-5 w-5" />
-                    <span>Post Ad</span>
-                </Link>
-
-                {/* Profile Button */}
-                <div className="relative">
-                    <button
-                        onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                        className="bg-white text-blue-600 p-2 rounded-full flex items-center space-x-2"
-                    >
-                        <UserIcon className="h-5 w-5" />
-                        <span>{user ? user.email : "Profile"}</span>
-                    </button>
-
-                    {/* Profile Menu */}
-                    {isProfileMenuOpen && (
-                        <div className="absolute right-0 bg-white text-black mt-2 w-40 rounded shadow">
-                            {user ? (
-                                <>
-                                    {/* <a href="/profile" className="block px-4 py-2 hover:bg-gray-100">
-                                        Personal Information
-                                    </a> */}
-                                    <button
-                                        onClick={() => setShowLogoutConfirm(true)}
-                                        className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                                    >
-                                        Logout
-                                    </button>
-                                    <a href="/my-ads" className="block px-4 py-2 hover:bg-gray-100">
-                                        My Ads
-                                    </a>
-                                    <a href="/saved-ads" className="block px-4 py-2 hover:bg-gray-100">
-                                        Saved Ads
-                                    </a>
-                                </>
-                            ) : (
-                                <>
-                                    <a href="/login" className="block px-4 py-2 hover:bg-gray-100">
-                                        Login
-                                    </a>
-                                    <a href="/register" className="block px-4 py-2 hover:bg-gray-100">
-                                        Register
-                                    </a>
-                                </>
-                            )}
-                        </div>
-                    )}
+        <>
+            <header className="fixed top-0 left-0 right-0 z-50 bg-blue-950 text-white flex items-center justify-between px-4 md:px-8 h-16">
+                {/* Logo */}
+                <div className="flex items-center space-x-2 text-xl font-bold">
+                    <Link to="/">
+                        <img src={logo} alt="Accomate Logo" className="h-10 w-auto" />
+                    </Link>
+                    <span>ACCOMATE</span>
                 </div>
-            </div>
 
-            {/* Logout Confirmation Popup */}
+                {/* Mobile menu toggle */}
+                <button
+                    onClick={() => setIsMobileMenuOpen(v => !v)}
+                    className="md:hidden p-2"
+                >
+                    {isMobileMenuOpen ? (
+                        <XIcon className="h-6 w-6 text-white" />
+                    ) : (
+                        <MenuIcon className="h-6 w-6 text-white" />
+                    )}
+                </button>
+
+                {/* Nav links */}
+                <nav
+                    className={`
+            absolute top-16 left-0 w-full bg-blue-950 md:bg-transparent
+            ${isMobileMenuOpen ? "block" : "hidden"} 
+            md:static md:block md:w-auto md:flex md:space-x-6
+          `}
+                >
+                    {["Home", "Rooms", "Annex", "House"].map((label) => (
+                        <Link
+                            key={label}
+                            to={`/${label.toLowerCase()}`}
+                            className="block px-4 py-2 hover:text-yellow-400 md:py-0"
+                        >
+                            {label}
+                        </Link>
+                    ))}
+                </nav>
+
+                {/* Right actions */}
+                <div className="flex items-center space-x-4">
+                    <Link
+                        to="/post-ad"
+                        className="hidden md:flex items-center space-x-1 bg-yellow-500 hover:bg-yellow-400 text-blue-950 font-medium py-2 px-4 rounded-full"
+                    >
+                        <PlusIcon className="h-5 w-5" />
+                        <span>Post Ad</span>
+                    </Link>
+
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsProfileMenuOpen(v => !v)}
+                            className="flex items-center space-x-2 bg-white text-blue-950 px-3 py-1 rounded-full"
+                        >
+                            <UserIcon className="h-5 w-5" />
+                            <span className="truncate max-w-[6rem]">
+                {user?.email ?? "Profile"}
+              </span>
+                        </button>
+
+                        {isProfileMenuOpen && (
+                            <div className="absolute right-0 mt-2 w-44 bg-white text-blue-950 rounded shadow-md overflow-hidden">
+                                {user ? (
+                                    <>
+                                        <button
+                                            onClick={() => setShowLogoutConfirm(true)}
+                                            className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                                        >
+                                            Logout
+                                        </button>
+                                        <Link
+                                            to="/my-ads"
+                                            className="block px-4 py-2 hover:bg-gray-100"
+                                        >
+                                            My Ads
+                                        </Link>
+                                        <Link
+                                            to="/saved-ads"
+                                            className="block px-4 py-2 hover:bg-gray-100"
+                                        >
+                                            Saved Ads
+                                        </Link>
+                                        <Link
+                                            to="/user-dashboard"
+                                            className="block px-4 py-2 hover:bg-gray-100"
+                                        >
+                                            Dashboard
+                                        </Link>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link
+                                            to="/admin-dashboard"
+                                            className="block px-4 py-2 hover:bg-gray-100"
+                                        >
+                                            Login
+                                        </Link>
+                                        <Link
+                                            to="/register"
+                                            className="block px-4 py-2 hover:bg-gray-100"
+                                        >
+                                            Register
+                                        </Link>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </header>
+
+            {/* Logout Confirmation */}
             {showLogoutConfirm && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-                    <p className="mb-4 text-lg font-semibold text-black">Are you sure you want to logout?</p>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 text-center">
+                        <p className="mb-4 font-semibold text-gray-800">
+                            Are you sure you want to logout?
+                        </p>
                         <div className="flex justify-center space-x-4">
                             <button
                                 onClick={handleLogout}
-                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
                             >
                                 Yes, Logout
                             </button>
                             <button
                                 onClick={() => setShowLogoutConfirm(false)}
-                                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded"
                             >
                                 Cancel
                             </button>
@@ -144,7 +160,7 @@ const Header = () => {
                     </div>
                 </div>
             )}
-        </header>
+        </>
     );
 };
 
