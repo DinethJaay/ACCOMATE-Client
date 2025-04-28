@@ -117,7 +117,7 @@ const Header = () => {
                                 ) : (
                                     <>
                                         <Link
-                                            to="/user/user-dashboard"
+                                            to="/user/search-ads"
                                             className="block px-4 py-2 hover:bg-gray-100"
                                         >
                                             Login
