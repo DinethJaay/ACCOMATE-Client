@@ -12,6 +12,7 @@ import EditProfile from "./pages/User/EditProfile";
 import AdminEditProfile from "./pages/Admin/AdminEditProfile";
 import AdManagement from "./pages/Admin/AdManagement";
 import UserManagement from "./pages/Admin/UserManagement";
+import MyAds from "./pages/User/MyAds";
 
 
 
@@ -31,6 +32,8 @@ function App() {
             <Route path="/admin/edit-profile" element={<AdminEditProfile />} />
             <Route path="/admin/ad-management" element={<AdManagement />} />
             <Route path="/admin/user-management" element={<UserManagement />} />
+            <Route path="/user/my-ads" element={<MyAds />} />
+
         </Routes>
       </main>
       <Footer />

@@ -17,7 +17,7 @@ const menu = [
     { name: 'My Account',    icon: FaUser,           path: '/account' },
     { name: 'Edit Profile',  icon: FaEdit,           path: 'user/edit-profile' },
     { name: 'View Profile',  icon: FaEye,            path: 'user/view-profile' },
-    { name: 'Manage My Ads', icon: FaClipboardList,  path: '/manage-ads' },
+    { name: 'Manage My Ads', icon: FaClipboardList,  path: '/user/my-ads' },
     { name: 'Favourite Ads', icon: FaHeart,          path: '/favourites' },
     { name: 'My Messages',   icon: FaEnvelope,       path: '/messages' },
 ];
