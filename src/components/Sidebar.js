@@ -1,5 +1,6 @@
+// src/components/Sidebar.jsx
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
     FaTachometerAlt,
     FaUser,
@@ -12,48 +13,46 @@ import {
 } from 'react-icons/fa';
 
 const menu = [
-    { name: 'Dashboard', icon: FaTachometerAlt, path: '/user-dashboard' },
-    { name: 'My Account', icon: FaUser, path: '/account' },
-    { name: 'Edit Profile', icon: FaEdit, path: '/edit-profile' },
-    { name: 'View Profile', icon: FaEye, path: '/view-profile' },
-    { name: 'Manage My Ads', icon: FaClipboardList, path: '/manage-ads' },
-    { name: 'Favourite Ads', icon: FaHeart, path: '/favourites' },
-    { name: 'My Messages', icon: FaEnvelope, path: '/messages' },
+    { name: 'Dashboard',     icon: FaTachometerAlt, path: '/user-dashboard' },
+    { name: 'My Account',    icon: FaUser,           path: '/account' },
+    { name: 'Edit Profile',  icon: FaEdit,           path: '/edit-profile' },
+    { name: 'View Profile',  icon: FaEye,            path: '/view-profile' },
+    { name: 'Manage My Ads', icon: FaClipboardList,  path: '/manage-ads' },
+    { name: 'Favourite Ads', icon: FaHeart,          path: '/favourites' },
+    { name: 'My Messages',   icon: FaEnvelope,       path: '/messages' },
 ];
 
 export default function Sidebar() {
-    const location = useLocation();
-
     return (
-        <aside className="fixed top-16 left-0 bottom-0 w-64 bg-white shadow-md overflow-y-auto z-20">
-            <nav className="mt-4">
+        <aside className="fixed top-16 left-0 bottom-0 w-64 pt-6 bg-white shadow-md overflow-y-auto z-20">
+            <nav>
                 <ul>
-                    {menu.map((item) => (
-                        <li
-                            key={item.name}
-                            className={`px-4 py-2 hover:bg-gray-100 ${
-                                location.pathname === item.path ? 'bg-gray-200' : ''
-                            }`}
-                        >
-                            <Link
-                                to={item.path}
-                                className="flex items-center space-x-3 text-gray-700"
+                    {menu.map(({ name, icon: Icon, path }) => (
+                        <li key={name}>
+                            <NavLink
+                                to={path}
+                                end
+                                className={({ isActive }) =>
+                                    `block px-4 py-2 rounded-r flex items-center space-x-3 
+                   text-gray-700 hover:bg-gray-100
+                   ${isActive ? 'bg-gray-200 font-semibold' : ''}`
+                                }
                             >
-                                <item.icon className="w-5 h-5" />
-                                <span>{item.name}</span>
-                            </Link>
+                                <Icon className="w-5 h-5" />
+                                <span>{name}</span>
+                            </NavLink>
                         </li>
                     ))}
                 </ul>
             </nav>
 
             <div className="absolute bottom-0 w-full p-4">
-                <Link
+                <NavLink
                     to="/post-ad"
-                    className="w-full block text-center bg-black text-white py-2 rounded"
+                    className="block text-center bg-black text-white py-2 rounded hover:bg-gray-800"
                 >
                     <FaPlus className="inline-block mr-2" /> Post Ad
-                </Link>
+                </NavLink>
             </div>
         </aside>
     );
