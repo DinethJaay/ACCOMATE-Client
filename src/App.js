@@ -16,6 +16,8 @@ import MyAds from "./pages/User/MyAds";
 import FavouriteAds from "./pages/User/FavouriteAds";
 import SearchAds from "./pages/User/SearchAds";
 import AccomadationListing from "./pages/User/AccomadationListing";
+import AddListing from "./pages/User/AddListing";
+import PostAdForm from "./pages/User/AddListing";
 
 
 
@@ -39,6 +41,7 @@ function App() {
             <Route path="/user/favourite-ads" element={<FavouriteAds />} />
             <Route path="/user/search-ads" element={<SearchAds />} />
             <Route path="/user/view" element={<AccomadationListing />} />
+            <Route path="/user/add-listing" element={<PostAdForm />} />
 
 
 
