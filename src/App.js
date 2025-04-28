@@ -18,6 +18,7 @@ import SearchAds from "./pages/User/SearchAds";
 import AccomadationListing from "./pages/User/AccomadationListing";
 import AddListing from "./pages/User/AddListing";
 import PostAdForm from "./pages/User/AddListing";
+import AccommodationSearch from "./pages/User/AccommodationSearch";
 
 
 
@@ -42,6 +43,7 @@ function App() {
             <Route path="/user/search-ads" element={<SearchAds />} />
             <Route path="/user/view" element={<AccomadationListing />} />
             <Route path="/user/add-listing" element={<PostAdForm />} />
+          <Route path="/user/predict" element={<AccommodationSearch />} />
 
 
 
