@@ -1,6 +1,6 @@
 import React from 'react';
-import AdminSidebar from '../components/AdminSidebar';
-import Header from '../components/Heder';
+import AdminSidebar from '../../components/AdminSidebar';
+import Header from '../../components/Heder';
 import {
     FaClipboardList,
     FaUsers,

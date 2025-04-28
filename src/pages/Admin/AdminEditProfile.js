@@ -1,11 +1,11 @@
-// src/pages/EditProfile.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Header from '../components/Heder';
+import Sidebar from '../../components/Sidebar';
+import Header from '../../components/Heder';
 import { PhoneIcon } from '@heroicons/react/solid';
 
-export default function EditProfile() {
+export default function AdminEditProfile() {
     const navigate = useNavigate();
     const [user, setUser] = useState({
         fullName: '',

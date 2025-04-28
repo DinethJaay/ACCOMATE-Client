@@ -6,10 +6,11 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/Forgotpassword";
-import Dashboard from "./pages/Dashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import EditProfile from "./pages/EditProfile";
-import AdminEditProfile from "./pages/AdminEditProfile";
+import Dashboard from "./pages/User/Dashboard";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import EditProfile from "./pages/User/EditProfile";
+import AdminEditProfile from "./pages/Admin/AdminEditProfile";
+import AdManagement from "./pages/Admin/AdManagement";
 
 
 
@@ -23,10 +24,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/register" element={<Register />} />
-            <Route path="/user-dashboard" element={<Dashboard />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/edit-profile" element={<EditProfile />} />
-            <Route path="/admin-edit-profile" element={<AdminEditProfile />} />
+            <Route path="/user/user-dashboard" element={<Dashboard />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/user/edit-profile" element={<EditProfile />} />
+            <Route path="/admin/edit-profile" element={<AdminEditProfile />} />
+            <Route path="/admin/ad-management" element={<AdManagement />} />
         </Routes>
       </main>
       <Footer />

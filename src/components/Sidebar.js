@@ -13,10 +13,10 @@ import {
 } from 'react-icons/fa';
 
 const menu = [
-    { name: 'Dashboard',     icon: FaTachometerAlt, path: '/user-dashboard' },
+    { name: 'Dashboard',     icon: FaTachometerAlt, path: 'user/dashboard' },
     { name: 'My Account',    icon: FaUser,           path: '/account' },
-    { name: 'Edit Profile',  icon: FaEdit,           path: '/edit-profile' },
-    { name: 'View Profile',  icon: FaEye,            path: '/view-profile' },
+    { name: 'Edit Profile',  icon: FaEdit,           path: 'user/edit-profile' },
+    { name: 'View Profile',  icon: FaEye,            path: 'user/view-profile' },
     { name: 'Manage My Ads', icon: FaClipboardList,  path: '/manage-ads' },
     { name: 'Favourite Ads', icon: FaHeart,          path: '/favourites' },
     { name: 'My Messages',   icon: FaEnvelope,       path: '/messages' },
