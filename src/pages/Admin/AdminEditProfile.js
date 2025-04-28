@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '../../components/Sidebar';
+import Sidebar from '../../components/AdminSidebar';
 import Header from '../../components/Heder';
 import { PhoneIcon } from '@heroicons/react/solid';
 

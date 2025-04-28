@@ -21,7 +21,7 @@ const DUMMY_DATA = [
     // more data
 ];
 
-export default function MyAds() {
+export default function FavouriteAds() {
     const [section, setSection] = useState('');
     const [status, setStatus] = useState('');
     const [search, setSearch] = useState('');
@@ -52,7 +52,7 @@ export default function MyAds() {
                 <AdminSidebar />
 
                 <main className="flex-1 ml-64 pt-24 bg-gray-100 p-8 min-h-screen">
-                    <h2 className="text-2xl font-semibold mb-6">My Ads</h2>
+                    <h2 className="text-2xl font-semibold mb-6">Favourite Ads</h2>
 
                     {/* Filters */}
                     <div className="bg-white rounded-lg shadow mb-6">
