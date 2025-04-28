@@ -15,6 +15,7 @@ import UserManagement from "./pages/Admin/UserManagement";
 import MyAds from "./pages/User/MyAds";
 import FavouriteAds from "./pages/User/FavouriteAds";
 import SearchAds from "./pages/User/SearchAds";
+import AccomadationListing from "./pages/User/AccomadationListing";
 
 
 
@@ -37,6 +38,8 @@ function App() {
             <Route path="/user/my-ads" element={<MyAds />} />
             <Route path="/user/favourite-ads" element={<FavouriteAds />} />
             <Route path="/user/search-ads" element={<SearchAds />} />
+            <Route path="/user/view" element={<AccomadationListing />} />
+
 
 
         </Routes>
