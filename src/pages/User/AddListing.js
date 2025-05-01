@@ -3,6 +3,7 @@ import Footer from "../../components/Footer";
 import Header from "../../components/Heder";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useEffect } from "react";
 
 const PostAdForm = () => {
   const [price, setPrice] = useState("00.00");
@@ -10,7 +11,34 @@ const PostAdForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [images, setImages] = useState([]);
+  const [userName, setUserName] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [token, setToken] = useState("");
+  const [error, setError] = useState(null);
 
+   // Load user data from localStorage when component mounts
+   useEffect(() => {
+    const userData = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('token');
+
+    if (!userData || !storedToken) {
+      setError("No user data or token found.");
+      toast.error("Please log in to continue.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+    console.log("User data:", userData);
+    try {
+      const parsedUserData = JSON.parse(userData);
+      setUserName(parsedUserData.email || "");
+      setToken(storedToken);
+    } catch (err) {
+      console.error("Error parsing user data:", err);
+      setError("Error loading user data.");
+    }
+  }, []);
   // Function to handle image upload
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -237,8 +265,6 @@ const PostAdForm = () => {
       formData.append("images", file); // Use 'images' as the field name
     });
 
-    const token =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJiVUdzREFEZmVTYkNJRWU2aHU3bnVROHpyVkUyIiwiZW1haWwiOiJkaW5ldGhqYXlhbmdhMzcrMzIxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0NjEwNjQ2OSwiZXhwIjoxNzQ2MTEwMDY5fQ.oqQ9IRmUZyvwZmCTa4G2IbaTbzEeMFITlxeDWUQ4pvc"; // Replace with actual JWT token
     // Send the data to the server using fetch
     fetch("http://localhost:3000/api/accommodation/add-listing", {
       method: "POST",
@@ -994,6 +1020,8 @@ const PostAdForm = () => {
                       type="text"
                       id="userName"
                       placeholder="Dimple Gamage"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
                       className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
@@ -1006,6 +1034,9 @@ const PostAdForm = () => {
                     <input
                       type="tel"
                       id="mobileNumber"
+                      required
+                      value={mobileNumber}
+                      onChange={(e) => setMobileNumber(e.target.value)}
                       placeholder="0700000000"
                       className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
@@ -1031,12 +1062,12 @@ const PostAdForm = () => {
               </div>
 
               {/* Terms and Conditions */}
-              <div className="mb-6 flex items-center">
+              {/* <div className="mb-6 flex items-center">
                 <input type="checkbox" id="terms" className="mr-2" />
                 <label htmlFor="terms" className="text-sm">
                   I agree to Term & conditions
                 </label>
-              </div>
+              </div> */}
 
               {/* Submit Button */}
               <div className="text-center">
@@ -1051,8 +1082,6 @@ const PostAdForm = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

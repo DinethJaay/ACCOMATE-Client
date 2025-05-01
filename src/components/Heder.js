@@ -67,7 +67,7 @@ const Header = () => {
                 {/* Right actions */}
                 <div className="flex items-center space-x-4">
                     <Link
-                        to="/post-ad"
+                        to="user/add-listing"
                         className="hidden md:flex items-center space-x-1 bg-yellow-500 hover:bg-yellow-400 text-blue-950 font-medium py-2 px-4 rounded-full"
                     >
                         <PlusIcon className="h-5 w-5" />
