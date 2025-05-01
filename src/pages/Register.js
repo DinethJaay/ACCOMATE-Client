@@ -14,16 +14,21 @@ const Register = () => {
         firstName: "",
         lastName: "",
         email: "",
-        contactNumber: "",
+        phone: "",
         password: "",
+        nic: "",
+        role : "user",
+        address : "fdffffdf",
         confirmPassword: "",
     });
     const [errors, setErrors] = useState({
         firstName: "",
         lastName: "",
         email: "",
+        phone: "",
         contactNumber: "",
         password: "",
+        nic: "",
         confirmPassword: "",
     });
 
@@ -32,7 +37,7 @@ const Register = () => {
             firstName: "",
             lastName: "",
             email: "",
-            contactNumber: "",
+            phone: "",
             password: "",
             confirmPassword: "",
         };
@@ -56,8 +61,12 @@ const Register = () => {
             isValid = false;
         }
 
-        if (!formData.contactNumber) {
-            formErrors.contactNumber = "Contact Number is required";
+        if (!formData.phone) {
+            formErrors.phone = "Contact Number is required";
+            isValid = false;
+        }
+        if (!formData.nic) {
+            formErrors.nic = "NIC number is required";
             isValid = false;
         }
 
@@ -86,16 +95,23 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
-
+    
         setLoading(true);
+    
+        // Concatenate firstName and lastName to create the full name
+        const fullName = `${formData.firstName} ${formData.lastName}`;
+    
+        // Create a new form data object with concatenated name
+        const updatedFormData = { ...formData, name: fullName };
+    
         try {
-            const response = await fetch(`${apiUrl}/auth/register`, {
+            const response = await fetch(`http://localhost:3000/api/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(updatedFormData), // Send updated formData with the name field
             });
             const result = await response.json();
-
+    
             if (response.ok) {
                 toast.success("User registered successfully & Verification email sent!", {
                     position: "top-right",
@@ -106,7 +122,7 @@ const Register = () => {
                     firstName: "",
                     lastName: "",
                     email: "",
-                    contactNumber: "",
+                    phone: "",
                     password: "",
                     confirmPassword: "",
                 });
@@ -127,6 +143,7 @@ const Register = () => {
             setLoading(false);
         }
     };
+    
 
     return (
         <div
@@ -210,18 +227,35 @@ const Register = () => {
                                 Contact Number
                             </label>
                             <input
-                                id="contactNumber"
-                                name="contactNumber"
+                                id="phone"
+                                name="phone"
                                 type="text"
                                 placeholder="e.g. +94 77 123 4567"
                                 value={formData.contactNumber}
                                 onChange={handleChange}
                                 className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
                             />
-                            {errors.contactNumber && (
-                                <p className="mt-1 text-sm text-red-500">{errors.contactNumber}</p>
+                            {errors.phone && (
+                                <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
                             )}
                         </div>
+                        <div>
+    <label htmlFor="nic" className="block text-sm font-medium mb-1">
+        NIC Number
+    </label>
+    <input
+        id="nic"
+        name="nic"
+        type="text"
+        placeholder="Enter your NIC number"
+        value={formData.nic}
+        onChange={handleChange}
+        className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400"
+    />
+    {errors.nic && (
+        <p className="mt-1 text-sm text-red-500">{errors.nic}</p>
+    )}
+</div>
 
                         {/* Password */}
                         <div>

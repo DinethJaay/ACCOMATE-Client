@@ -32,7 +32,7 @@ const Login = () => {
     if (!validateForm()) return;
     setLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/auth/login`, {
+      const res = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.username, password: formData.password }),
