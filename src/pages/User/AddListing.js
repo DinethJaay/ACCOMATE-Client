@@ -141,93 +141,107 @@ const PostAdForm = () => {
       setIsLoading(false);
     }
   };
+  // Helper function to safely parse numeric values from form fields
+const parseNumericValue = (id, type = 'int') => {
+    const value = document.getElementById(id)?.value;
+    
+    if (!value) {
+      return 0; // Default value if empty
+    }
+    
+    if (type === 'float') {
+      return parseFloat(value) || 0;
+    }
+    
+    return parseInt(value) || 0;
+  };
 
-  // Function to handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Convert checkbox to 1 or 0
-    const checkboxValue = (id) => (document.getElementById(id).checked ? 1 : 0);
-
+  
+    // Function to convert checkbox state to boolean (true or false)
+    const checkboxValue = (id) => document.getElementById(id).checked;
+  
     // Gather all form data
-    const formData = {
-      // Basic property info
-      title: document.getElementById("title").value,
-      category: document.getElementById("category").value,
-      description: document.getElementById("description").value,
-      pricingType: document.getElementById("pricingType").value,
-      price: price,
-      itemCondition: document.getElementById("itemCondition").value,
+    const formData = new FormData();
+    formData.append("title", document.getElementById("title").value);
+    formData.append("category", document.getElementById("category").value);
+    formData.append("description", document.getElementById("description").value);
+    formData.append("pricingType", document.getElementById("pricingType").value);
+    formData.append("price", price); // Use the predicted price
+    formData.append("itemCondition", document.getElementById("itemCondition").value);
+    formData.append("city", document.getElementById("city").value);
+    formData.append("statezip", document.getElementById("statezip").value);
+    formData.append("country", document.getElementById("country").value);
 
-      images: images.map(img => img.file),
-
-      // Property details
-      bedrooms: parseInt(document.getElementById("bedrooms").value),
-      bathrooms: parseFloat(document.getElementById("bathrooms").value),
-      bathroomType: document.getElementById("bathroomType").value,
-      sqft_living: parseInt(document.getElementById("sqft_living").value),
-      sqft_lot: parseInt(document.getElementById("sqft_lot").value),
-      floors: parseFloat(document.getElementById("floors").value),
-      waterfront: parseInt(document.getElementById("waterfront").value),
-      view: parseInt(document.getElementById("view").value),
-      condition: parseInt(document.getElementById("condition").value),
-      sqft_above: parseInt(document.getElementById("sqft_above").value),
-      sqft_basement: parseInt(document.getElementById("sqft_basement").value),
-      yr_built: parseInt(document.getElementById("yr_built").value),
-      yr_renovated: parseInt(document.getElementById("yr_renovated").value),
-
-      // Location
-      city: document.getElementById("city").value,
-      statezip: document.getElementById("statezip").value,
-      country: document.getElementById("country").value,
-
-      // Accessibility Features (using 1/0 instead of true/false)
-      accessibilityFeatures: {
-        groundFloor: checkboxValue("groundfloor"),
-        noStep: checkboxValue("nostep"),
-        grabBars: checkboxValue("grabbars"),
-        wheelchair: checkboxValue("wheelchair"),
+     // Property details (numeric fields)
+     formData.append("bedrooms", parseNumericValue("bedrooms"));
+     formData.append("bathrooms", parseNumericValue("bathrooms"));
+     formData.append("sqftLiving", parseNumericValue("sqft_living"));
+     formData.append("sqftLot", parseNumericValue("sqft_lot"));
+     formData.append("floors", parseNumericValue("floors", "float"));
+     formData.append("waterfront", parseNumericValue("waterfront"));
+     formData.append("view", parseNumericValue("view"));
+     formData.append("condition", parseNumericValue("condition"));
+     formData.append("sqftAbove", parseNumericValue("sqft_above"));
+     formData.append("sqftBasement", parseNumericValue("sqft_basement"));
+     formData.append("yrBuilt", parseNumericValue("yr_built"));
+     formData.append("yrRenovated", parseNumericValue("yr_renovated"));
+  
+    // Property and Accessibility features (directly as separate fields)
+    formData.append("groundFloor", checkboxValue("ground_floor"));
+    formData.append("noStep", checkboxValue("nosteps"));
+    formData.append("grabBars", checkboxValue("grabbars"));
+    formData.append("wheelchair", checkboxValue("wheelchair"));
+    formData.append("singleBeds", checkboxValue("singlebeds"));
+    formData.append("doubleBeds", checkboxValue("doublebeds"));
+    formData.append("pantry", checkboxValue("pantry"));
+    formData.append("kitchen", checkboxValue("kitchen"));
+    formData.append("livingRoom", checkboxValue("livingroom"));
+    formData.append("cctv", checkboxValue("cctv"));
+    formData.append("separateEntrance", checkboxValue("separateentrance"));
+    formData.append("furnished", checkboxValue("furnished"));
+    formData.append("brandNew", checkboxValue("brandnew"));
+  
+    // Terms agreement
+    formData.append("termsAgreed", checkboxValue("terms"));
+  
+    // User information
+    formData.append("userName", document.getElementById("userName").value);
+    formData.append("mobileNumber", document.getElementById("mobileNumber").value);
+    formData.append("userCountry", document.getElementById("userCountry").value);
+    formData.append("address", document.getElementById("address").value);
+  
+    // Image files will be added as multipart data
+    const files = document.getElementById('property-images').files;
+    
+    // Append each selected image file to the form data
+    Array.from(files).forEach((file) => {
+      formData.append('images', file); // Use 'images' as the field name
+    });
+  
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJiVUdzREFEZmVTYkNJRWU2aHU3bnVROHpyVkUyIiwiZW1haWwiOiJkaW5ldGhqYXlhbmdhMzcrMzIxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0NjEwMjM5MiwiZXhwIjoxNzQ2MTA1OTkyfQ.xzLOnAM82fLWQ2EBBkaOuBeZ75DMSRuzgTG3SiH9vyk';  // Replace with actual JWT token
+    // Send the data to the server using fetch
+    fetch('http://localhost:3000/api/accommodation/add-listing', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,  // Use the actual JWT token
       },
-
-      // Property Features (using 1/0 instead of true/false)
-      propertyFeatures: {
-        singleBeds: checkboxValue("singlebeds"),
-        doubleBeds: checkboxValue("doublebeds"),
-        pantry: checkboxValue("pantry"),
-        kitchen: checkboxValue("kitchen"),
-        livingRoom: checkboxValue("livingroom"),
-        cctv: checkboxValue("cctv"),
-        separateEntrance: checkboxValue("separateentrance"),
-        furnished: checkboxValue("furnished"),
-        brandNew: checkboxValue("brandnew"),
-      },
-
-      // Terms agreement (using 1/0)
-      termsAgreed: checkboxValue("terms"),
-
-      // User information
-      userName: document.getElementById("userName").value,
-      mobileNumber: document.getElementById("mobileNumber").value,
-      userCountry: document.getElementById("userCountry").value,
-      address: document.getElementById("address").value,
-    };
-
-    // Validate terms agreement
-    if (formData.termsAgreed === 0) {
-      alert("You must agree to the terms and conditions to proceed.");
-      return;
-    }
-
-    console.log("Form submission data:", formData);
-
-    // TODO: Replace with actual API call
-    // Example:
-    // fetch('/api/add-listing', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(formData)
-    // });
+      body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Listing added successfully:', data);
+      // Optionally handle the response (e.g., show a success message)
+    })
+    .catch(error => {
+      console.error('Error adding listing:', error);
+      // Optionally handle the error (e.g., show an error message)
+    });
   };
+  
+  
+  
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
@@ -237,7 +251,7 @@ const PostAdForm = () => {
         <div className="container mx-auto">
           {/* Breadcrumb */}
           <div className="mb-6 ml-4">
-            <h2 className="text-lg text-gray-700 font-medium">Section 11</h2>
+           
           </div>
 
           {/* Form Container */}
@@ -252,25 +266,7 @@ const PostAdForm = () => {
             <form onSubmit={handleSubmit}>
               {/* Boarding */}
               <div className="mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Boarding
-                  </label>
-                  <div className="flex space-x-4 text-sm">
-                    <span className="text-yellow-500">
-                      Single Room, Colombo
-                    </span>
-                    <span className="text-yellow-500">
-                      Single Room, Rent Room
-                    </span>
-                    <button
-                      type="button"
-                      className="text-blue-500 hover:underline"
-                    >
-                      Change
-                    </button>
-                  </div>
-                </div>
+               
               </div>
               <div className="mt-3">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -753,11 +749,11 @@ const PostAdForm = () => {
                 </label>
                 <div className="space-y-2">
                   <div className="flex items-center">
-                    <input type="checkbox" id="groundfloor" className="mr-2" />
+                    <input type="checkbox" id="ground_floor" className="mr-2" />
                     <label htmlFor="ground">Ground floor</label>
                   </div>
                   <div className="flex items-center">
-                    <input type="checkbox" id="nostep" className="mr-2" />
+                    <input type="checkbox" id="nosteps" className="mr-2" />
                     <label htmlFor="nostep">No step</label>
                   </div>
                   <div className="flex items-center">
