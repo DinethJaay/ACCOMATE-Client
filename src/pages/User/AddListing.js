@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import Footer from "../../components/Footer";
 import Header from "../../components/Heder";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PostAdForm = () => {
   const [price, setPrice] = useState("00.00");
@@ -9,25 +11,25 @@ const PostAdForm = () => {
   const [errors, setErrors] = useState({});
   const [images, setImages] = useState([]);
 
-   // Function to handle image upload
-   const handleImageUpload = (e) => {
+  // Function to handle image upload
+  const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Check if adding these files would exceed the limit
     if (images.length + files.length > 4) {
       alert("You can only upload a maximum of 4 images");
       return;
     }
-    
+
     // Process each file
-    const newImages = files.map(file => ({
+    const newImages = files.map((file) => ({
       file,
-      preview: URL.createObjectURL(file)
+      preview: URL.createObjectURL(file),
     }));
-    
+
     setImages([...images, ...newImages]);
   };
-  
+
   // Function to remove an image
   const removeImage = (index) => {
     const updatedImages = [...images];
@@ -142,52 +144,61 @@ const PostAdForm = () => {
     }
   };
   // Helper function to safely parse numeric values from form fields
-const parseNumericValue = (id, type = 'int') => {
+  const parseNumericValue = (id, type = "int") => {
     const value = document.getElementById(id)?.value;
-    
+
     if (!value) {
       return 0; // Default value if empty
     }
-    
-    if (type === 'float') {
+
+    if (type === "float") {
       return parseFloat(value) || 0;
     }
-    
+
     return parseInt(value) || 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     // Function to convert checkbox state to boolean (true or false)
     const checkboxValue = (id) => document.getElementById(id).checked;
-  
+
     // Gather all form data
     const formData = new FormData();
     formData.append("title", document.getElementById("title").value);
     formData.append("category", document.getElementById("category").value);
-    formData.append("description", document.getElementById("description").value);
-    formData.append("pricingType", document.getElementById("pricingType").value);
+    formData.append(
+      "description",
+      document.getElementById("description").value
+    );
+    formData.append(
+      "pricingType",
+      document.getElementById("pricingType").value
+    );
     formData.append("price", price); // Use the predicted price
-    formData.append("itemCondition", document.getElementById("itemCondition").value);
+    formData.append(
+      "itemCondition",
+      document.getElementById("itemCondition").value
+    );
     formData.append("city", document.getElementById("city").value);
     formData.append("statezip", document.getElementById("statezip").value);
     formData.append("country", document.getElementById("country").value);
 
-     // Property details (numeric fields)
-     formData.append("bedrooms", parseNumericValue("bedrooms"));
-     formData.append("bathrooms", parseNumericValue("bathrooms"));
-     formData.append("sqftLiving", parseNumericValue("sqft_living"));
-     formData.append("sqftLot", parseNumericValue("sqft_lot"));
-     formData.append("floors", parseNumericValue("floors", "float"));
-     formData.append("waterfront", parseNumericValue("waterfront"));
-     formData.append("view", parseNumericValue("view"));
-     formData.append("condition", parseNumericValue("condition"));
-     formData.append("sqftAbove", parseNumericValue("sqft_above"));
-     formData.append("sqftBasement", parseNumericValue("sqft_basement"));
-     formData.append("yrBuilt", parseNumericValue("yr_built"));
-     formData.append("yrRenovated", parseNumericValue("yr_renovated"));
-  
+    // Property details (numeric fields)
+    formData.append("bedrooms", parseNumericValue("bedrooms"));
+    formData.append("bathrooms", parseNumericValue("bathrooms"));
+    formData.append("sqftLiving", parseNumericValue("sqft_living"));
+    formData.append("sqftLot", parseNumericValue("sqft_lot"));
+    formData.append("floors", parseNumericValue("floors", "float"));
+    formData.append("waterfront", parseNumericValue("waterfront"));
+    formData.append("view", parseNumericValue("view"));
+    formData.append("condition", parseNumericValue("condition"));
+    formData.append("sqftAbove", parseNumericValue("sqft_above"));
+    formData.append("sqftBasement", parseNumericValue("sqft_basement"));
+    formData.append("yrBuilt", parseNumericValue("yr_built"));
+    formData.append("yrRenovated", parseNumericValue("yr_renovated"));
+
     // Property and Accessibility features (directly as separate fields)
     formData.append("groundFloor", checkboxValue("ground_floor"));
     formData.append("noStep", checkboxValue("nosteps"));
@@ -202,57 +213,77 @@ const parseNumericValue = (id, type = 'int') => {
     formData.append("separateEntrance", checkboxValue("separateentrance"));
     formData.append("furnished", checkboxValue("furnished"));
     formData.append("brandNew", checkboxValue("brandnew"));
-  
+
     // Terms agreement
     formData.append("termsAgreed", checkboxValue("terms"));
-  
+
     // User information
     formData.append("userName", document.getElementById("userName").value);
-    formData.append("mobileNumber", document.getElementById("mobileNumber").value);
-    formData.append("userCountry", document.getElementById("userCountry").value);
+    formData.append(
+      "mobileNumber",
+      document.getElementById("mobileNumber").value
+    );
+    formData.append(
+      "userCountry",
+      document.getElementById("userCountry").value
+    );
     formData.append("address", document.getElementById("address").value);
-  
+
     // Image files will be added as multipart data
-    const files = document.getElementById('property-images').files;
-    
+    const files = document.getElementById("property-images").files;
+
     // Append each selected image file to the form data
     Array.from(files).forEach((file) => {
-      formData.append('images', file); // Use 'images' as the field name
+      formData.append("images", file); // Use 'images' as the field name
     });
-  
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJiVUdzREFEZmVTYkNJRWU2aHU3bnVROHpyVkUyIiwiZW1haWwiOiJkaW5ldGhqYXlhbmdhMzcrMzIxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0NjEwMjM5MiwiZXhwIjoxNzQ2MTA1OTkyfQ.xzLOnAM82fLWQ2EBBkaOuBeZ75DMSRuzgTG3SiH9vyk';  // Replace with actual JWT token
+
+    const token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJiVUdzREFEZmVTYkNJRWU2aHU3bnVROHpyVkUyIiwiZW1haWwiOiJkaW5ldGhqYXlhbmdhMzcrMzIxQGdtYWlsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc0NjEwNjQ2OSwiZXhwIjoxNzQ2MTEwMDY5fQ.oqQ9IRmUZyvwZmCTa4G2IbaTbzEeMFITlxeDWUQ4pvc"; // Replace with actual JWT token
     // Send the data to the server using fetch
-    fetch('http://localhost:3000/api/accommodation/add-listing', {
-      method: 'POST',
+    fetch("http://localhost:3000/api/accommodation/add-listing", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,  // Use the actual JWT token
+        Authorization: `Bearer ${token}`, // Use the actual JWT token
       },
       body: formData,
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Listing added successfully:', data);
-      // Optionally handle the response (e.g., show a success message)
-    })
-    .catch(error => {
-      console.error('Error adding listing:', error);
-      // Optionally handle the error (e.g., show an error message)
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Listing added successfully:", data);
+        // Show success toast and reload page
+        toast.success("Listing added successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+
+        // Reload page after a short delay so user can see the toast
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 3000);
+      })
+      .catch((error) => {
+        console.error("Error adding listing:", error);
+        // Show error toast
+        toast.error("Error adding listing. Please try again.", {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      });
   };
-  
-  
-  
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
+      <ToastContainer />
       <Header />
 
       <main className="flex-grow mt-16 pt-4 pb-12">
         <div className="container mx-auto">
           {/* Breadcrumb */}
-          <div className="mb-6 ml-4">
-           
-          </div>
+          <div className="mb-6 ml-4"></div>
 
           {/* Form Container */}
           <div className="bg-white rounded-lg shadow-md max-w-3xl mx-auto p-6">
@@ -265,15 +296,14 @@ const parseNumericValue = (id, type = 'int') => {
 
             <form onSubmit={handleSubmit}>
               {/* Boarding */}
-              <div className="mb-6">
-               
-              </div>
+              <div className="mb-6"></div>
               <div className="mt-3">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Category
                 </label>
                 <select
                   id="category"
+                  required
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">Select a category</option>
@@ -289,6 +319,7 @@ const parseNumericValue = (id, type = 'int') => {
                 </label>
                 <input
                   id="title"
+                  required
                   type="text"
                   placeholder="Enter title (maximum limit 100)"
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -317,6 +348,7 @@ const parseNumericValue = (id, type = 'int') => {
                   </div>
                   <textarea
                     id="description"
+                    required
                     className="w-full p-3 min-h-[100px] focus:outline-none"
                     placeholder="Enter your description here"
                   ></textarea>
@@ -338,6 +370,18 @@ const parseNumericValue = (id, type = 'int') => {
                 </select>
               </div> */}
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  id="address"
+                  required
+                  placeholder="Enter Address"
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
               {/* Pricing Type */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -373,43 +417,6 @@ const parseNumericValue = (id, type = 'int') => {
               </div> */}
 
               {/* Price */}
-              {/* Price */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="price-input"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={handlePricePrediction}
-                    disabled={isLoading}
-                    className={`absolute right-2 top-1/2 transform -translate-y-1/2 ${
-                      isLoading ? "bg-gray-400" : "bg-blue-500"
-                    } text-white px-3 py-1 rounded text-sm`}
-                  >
-                    {isLoading ? "Calculating..." : "Fixed Price"}
-                  </button>
-                </div>
-                <div className="bg-gray-100 p-4 mt-2 text-center">
-                  <p className="font-bold text-gray-800">RS. {price}</p>
-                  {predictedPrice && (
-                    <p className="text-sm text-green-600 mt-1">
-                      Predicted Price: RS. {predictedPrice}
-                    </p>
-                  )}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Fill all required prediction fields marked with * to calculate
-                  price
-                </p>
-              </div>
 
               {/* Item Condition */}
               <div className="mb-6">
@@ -418,6 +425,7 @@ const parseNumericValue = (id, type = 'int') => {
                 </label>
                 <select
                   id="itemCondition"
+                  required
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">Select an option</option>
@@ -456,8 +464,8 @@ const parseNumericValue = (id, type = 'int') => {
                     )}
                   </div>
 
-                   {/* Bathrooms */}
-                   <div>
+                  {/* Bathrooms */}
+                  <div>
                     <label
                       htmlFor="bathrooms"
                       className="block text-sm font-medium text-gray-700 mb-1"
@@ -469,15 +477,19 @@ const parseNumericValue = (id, type = 'int') => {
                       id="bathrooms"
                       step="0.5"
                       required
-                      className={`w-full border ${errors.bathrooms ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.bathrooms ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
                     {errors.bathrooms && (
-                      <p className="text-red-500 text-xs mt-1">{errors.bathrooms}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.bathrooms}
+                      </p>
                     )}
                   </div>
 
-                 {/* Living Space */}
-                 <div>
+                  {/* Living Space */}
+                  <div>
                     <label
                       htmlFor="sqft_living"
                       className="block text-sm font-medium text-gray-700 mb-1"
@@ -488,10 +500,16 @@ const parseNumericValue = (id, type = 'int') => {
                       type="number"
                       id="sqft_living"
                       required
-                      className={`w-full border ${errors.sqft_living ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.sqft_living
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
                     {errors.sqft_living && (
-                      <p className="text-red-500 text-xs mt-1">{errors.sqft_living}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.sqft_living}
+                      </p>
                     )}
                   </div>
 
@@ -506,10 +524,14 @@ const parseNumericValue = (id, type = 'int') => {
                     <input
                       type="number"
                       id="sqft_lot"
-                      className={`w-full border ${errors.sqft_lot ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.sqft_lot ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
-                      {errors.sqft_lot && (
-                      <p className="text-red-500 text-xs mt-1">{errors.sqft_lot}</p>
+                    {errors.sqft_lot && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.sqft_lot}
+                      </p>
                     )}
                   </div>
 
@@ -525,10 +547,14 @@ const parseNumericValue = (id, type = 'int') => {
                       type="number"
                       id="floors"
                       step="0.5"
-                      className={`w-full border ${errors.floors ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.floors ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
                     {errors.floors && (
-                      <p className="text-red-500 text-xs mt-1">{errors.floors}</p>
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.floors}
+                      </p>
                     )}
                   </div>
 
@@ -542,11 +568,15 @@ const parseNumericValue = (id, type = 'int') => {
                     </label>
                     <select
                       id="waterfront"
-                      className={`w-full border ${errors.waterfront ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.waterfront ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     >
-                          {errors.waterfront && (
-                      <p className="text-red-500 text-xs mt-1">{errors.waterfront}</p>
-                    )}
+                      {errors.waterfront && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.waterfront}
+                        </p>
+                      )}
                       <option value="0">No</option>
                       <option value="1">Yes</option>
                     </select>
@@ -562,11 +592,15 @@ const parseNumericValue = (id, type = 'int') => {
                     </label>
                     <select
                       id="view"
-                      className={`w-full border ${errors.view ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.view ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     >
-                         {errors.view && (
-                      <p className="text-red-500 text-xs mt-1">{errors.view}</p>
-                    )}
+                      {errors.view && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.view}
+                        </p>
+                      )}
                       <option value="0">0 - None</option>
                       <option value="1">1 - Fair</option>
                       <option value="2">2 - Average</option>
@@ -585,11 +619,15 @@ const parseNumericValue = (id, type = 'int') => {
                     </label>
                     <select
                       id="condition"
-                      className={`w-full border ${errors.condition ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.condition ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     >
-                         {errors.condition && (
-                      <p className="text-red-500 text-xs mt-1">{errors.condition}</p>
-                    )}
+                      {errors.condition && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.condition}
+                        </p>
+                      )}
                       <option value="1">1 - Poor</option>
                       <option value="2">2 - Fair</option>
                       <option value="3">3 - Average</option>
@@ -609,10 +647,14 @@ const parseNumericValue = (id, type = 'int') => {
                     <input
                       type="number"
                       id="sqft_above"
-                      className={`w-full border ${errors.sqft_above ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.sqft_above ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
-                     {errors.sqft_above && (
-                      <p className="text-red-500 text-xs mt-1">{errors.sqft_above}</p>
+                    {errors.sqft_above && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.sqft_above}
+                      </p>
                     )}
                   </div>
 
@@ -627,10 +669,16 @@ const parseNumericValue = (id, type = 'int') => {
                     <input
                       type="number"
                       id="sqft_basement"
-                      className={`w-full border ${errors.sqft_basement ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.sqft_basement
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
-                     {errors.sqft_basement && (
-                      <p className="text-red-500 text-xs mt-1">{errors.sqft_basement}</p>
+                    {errors.sqft_basement && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.sqft_basement}
+                      </p>
                     )}
                   </div>
 
@@ -645,10 +693,14 @@ const parseNumericValue = (id, type = 'int') => {
                     <input
                       type="number"
                       id="yr_built"
-                      className={`w-full border ${errors.yr_built ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.yr_built ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
-                       {errors.yr_built && (
-                      <p className="text-red-500 text-xs mt-1">{errors.yr_built}</p>
+                    {errors.yr_built && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.yr_built}
+                      </p>
                     )}
                   </div>
 
@@ -663,10 +715,16 @@ const parseNumericValue = (id, type = 'int') => {
                     <input
                       type="number"
                       id="yr_renovated"
-                      className={`w-full border ${errors.yr_renovated ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.yr_renovated
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
-                     {errors.yr_renovated && (
-                      <p className="text-red-500 text-xs mt-1">{errors.yr_renovated}</p>
+                    {errors.yr_renovated && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.yr_renovated}
+                      </p>
                     )}
                   </div>
 
@@ -681,9 +739,11 @@ const parseNumericValue = (id, type = 'int') => {
                     <input
                       type="text"
                       id="city"
-                      className={`w-full border ${errors.city ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.city ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
-                     {errors.city && (
+                    {errors.city && (
                       <p className="text-red-500 text-xs mt-1">{errors.city}</p>
                     )}
                   </div>
@@ -699,10 +759,14 @@ const parseNumericValue = (id, type = 'int') => {
                     <input
                       type="text"
                       id="statezip"
-                      className={`w-full border ${errors.statezip ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.statezip ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
-                      {errors.statezip && (
-                      <p className="text-red-500 text-xs mt-1">{errors.statezip}</p>
+                    {errors.statezip && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.statezip}
+                      </p>
                     )}
                   </div>
 
@@ -717,12 +781,54 @@ const parseNumericValue = (id, type = 'int') => {
                     <input
                       type="text"
                       id="country"
-                      className={`w-full border ${errors.country ? 'border-red-500' : 'border-gray-300'} rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      className={`w-full border ${
+                        errors.country ? "border-red-500" : "border-gray-300"
+                      } rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500`}
                     />
-                     {errors.country && (
-                      <p className="text-red-500 text-xs mt-1">{errors.country}</p>
+                    {errors.country && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.country}
+                      </p>
                     )}
                   </div>
+                </div>
+
+                {/* Price */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Price
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="price-input"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handlePricePrediction}
+                      disabled={isLoading}
+                      className={`absolute right-2 top-1/2 transform -translate-y-1/2 ${
+                        isLoading ? "bg-gray-400" : "bg-blue-500"
+                      } text-white px-3 py-1 rounded text-sm`}
+                    >
+                      {isLoading ? "Calculating..." : "Fixed Price"}
+                    </button>
+                  </div>
+                  <div className="bg-gray-100 p-4 mt-2 text-center">
+                    <p className="font-bold text-gray-800">RS. {price}</p>
+                    {predictedPrice && (
+                      <p className="text-sm text-green-600 mt-1">
+                        Predicted Price: RS. {predictedPrice}
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Fill all required prediction fields marked with * to
+                    calculate price
+                  </p>
                 </div>
               </div>
 
@@ -818,8 +924,8 @@ const parseNumericValue = (id, type = 'int') => {
                   </div>
                 </div>
               </div>
-               {/* Image Upload Section */}
-               <div className="mb-8">
+              {/* Image Upload Section */}
+              <div className="mb-8">
                 <h2 className="text-lg font-medium mb-4 bg-gray-100 p-3 rounded">
                   Property Images
                 </h2>
@@ -839,15 +945,17 @@ const parseNumericValue = (id, type = 'int') => {
                   <label
                     htmlFor="property-images"
                     className={`block w-full py-2 px-3 border border-dashed rounded-lg text-center cursor-pointer ${
-                      images.length >= 4 
-                        ? "border-gray-300 text-gray-400" 
+                      images.length >= 4
+                        ? "border-gray-300 text-gray-400"
                         : "border-blue-500 text-blue-500 hover:bg-blue-50"
                     }`}
                   >
-                    {images.length >= 4 ? "Maximum images reached" : "Click to upload images"}
+                    {images.length >= 4
+                      ? "Maximum images reached"
+                      : "Click to upload images"}
                   </label>
                 </div>
-                
+
                 {/* Image Preview */}
                 {images.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
@@ -903,7 +1011,7 @@ const parseNumericValue = (id, type = 'int') => {
                     />
                   </div>
 
-                  {/* Country */}
+                  {/* Country
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Country *
@@ -915,20 +1023,10 @@ const parseNumericValue = (id, type = 'int') => {
                       <option value="">Select an option</option>
                       <option value="sri-lanka">Sri Lanka</option>
                     </select>
-                  </div>
+                  </div> */}
 
-                  {/* Address */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Address
-                    </label>
-                    <input
-                      type="text"
-                      id="address"
-                      placeholder="Enter Address"
-                      className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
-                  </div>
+                 
+                 
                 </div>
               </div>
 
