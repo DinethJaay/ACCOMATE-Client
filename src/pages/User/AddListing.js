@@ -7,6 +7,34 @@ const PostAdForm = () => {
   const [predictedPrice, setPredictedPrice] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [images, setImages] = useState([]);
+
+   // Function to handle image upload
+   const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    
+    // Check if adding these files would exceed the limit
+    if (images.length + files.length > 4) {
+      alert("You can only upload a maximum of 4 images");
+      return;
+    }
+    
+    // Process each file
+    const newImages = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+    
+    setImages([...images, ...newImages]);
+  };
+  
+  // Function to remove an image
+  const removeImage = (index) => {
+    const updatedImages = [...images];
+    URL.revokeObjectURL(updatedImages[index].preview); // Clean up object URL
+    updatedImages.splice(index, 1);
+    setImages(updatedImages);
+  };
 
   // Function to validate prediction fields
   const validatePredictionFields = () => {
@@ -130,6 +158,8 @@ const PostAdForm = () => {
       pricingType: document.getElementById("pricingType").value,
       price: price,
       itemCondition: document.getElementById("itemCondition").value,
+
+      images: images.map(img => img.file),
 
       // Property details
       bedrooms: parseInt(document.getElementById("bedrooms").value),
@@ -791,6 +821,58 @@ const PostAdForm = () => {
                     <label htmlFor="brand-new">Brand New</label>
                   </div>
                 </div>
+              </div>
+               {/* Image Upload Section */}
+               <div className="mb-8">
+                <h2 className="text-lg font-medium mb-4 bg-gray-100 p-3 rounded">
+                  Property Images
+                </h2>
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 mb-2">
+                    Upload up to 4 photos of your property (PNG, JPG)
+                  </p>
+                  <input
+                    type="file"
+                    id="property-images"
+                    multiple
+                    accept="image/png, image/jpeg"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={images.length >= 4}
+                  />
+                  <label
+                    htmlFor="property-images"
+                    className={`block w-full py-2 px-3 border border-dashed rounded-lg text-center cursor-pointer ${
+                      images.length >= 4 
+                        ? "border-gray-300 text-gray-400" 
+                        : "border-blue-500 text-blue-500 hover:bg-blue-50"
+                    }`}
+                  >
+                    {images.length >= 4 ? "Maximum images reached" : "Click to upload images"}
+                  </label>
+                </div>
+                
+                {/* Image Preview */}
+                {images.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    {images.map((image, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={image.preview}
+                          alt={`Property preview ${index + 1}`}
+                          className="w-full h-32 object-cover rounded"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full w-6 h-6 flex items-center justify-center"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               {/* User Information */}
               <div className="mb-8">
