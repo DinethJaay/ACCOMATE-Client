@@ -42,7 +42,7 @@ const Login = () => {
       toast.success('Login successful!');
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      window.location.href = '/boarding';
+      window.location.href = 'user/search-ads'; // Redirect to user dashboard
     } catch (err) {
       toast.error(err.message);
       setErrors(e => ({ ...e, form: err.message }));
