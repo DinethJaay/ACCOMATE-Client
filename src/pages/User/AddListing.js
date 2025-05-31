@@ -4,6 +4,7 @@ import Header from "../../components/Heder";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useEffect } from "react";
+import axios from "axios";
 
 const PostAdForm = () => {
   const [price, setPrice] = useState("00.00");
@@ -15,30 +16,34 @@ const PostAdForm = () => {
   const [mobileNumber, setMobileNumber] = useState("");
   const [token, setToken] = useState("");
   const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
    // Load user data from localStorage when component mounts
-   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
+      useEffect(() => {
+        const userData = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
 
-    if (!userData || !storedToken) {
-      setError("No user data or token found.");
-      toast.error("Please log in to continue.", {
-        position: "top-right",
-        autoClose: 5000,
-      });
-      return;
-    }
-    console.log("User data:", userData);
-    try {
-      const parsedUserData = JSON.parse(userData);
-      setUserName(parsedUserData.email || "");
-      setToken(storedToken);
-    } catch (err) {
-      console.error("Error parsing user data:", err);
-      setError("Error loading user data.");
-    }
-  }, []);
+        if (!userData || !storedToken) {
+          setError("No user data or token found.");
+          toast.error("Please log in to continue.", {
+            position: "top-right",
+            autoClose: 5000,
+          });
+          return;
+        }
+
+        console.log("User data:", userData);
+        try {
+          const parsedUserData = JSON.parse(userData);
+          setUserName(parsedUserData.email || "");
+          setToken(storedToken);
+        } catch (err) {
+          console.error("Error parsing user data:", err);
+          setError("Error loading user data.");
+        }
+      }, []);
+
   // Function to handle image upload
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -115,7 +120,7 @@ const PostAdForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Function to handle price prediction
+  
   // Function to handle price prediction
   const handlePricePrediction = async () => {
     // Validate all required fields
@@ -186,16 +191,44 @@ const PostAdForm = () => {
     return parseInt(value) || 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+
+    if (!token) {
+      console.error("No token found!");
+      toast.error("No valid token. Please log in again.");
+      return;
+    }
+
+    console.log("Sending token:", token);
+
     // Function to convert checkbox state to boolean (true or false)
-    const checkboxValue = (id) => document.getElementById(id).checked;
+    const checkboxValue = (id) => {
+      const element = document.getElementById(id);
+      return element ? element.checked : false; // Default to false if element is missing
+    };
+
+    const getValue = (id) => {
+      const element = document.getElementById(id);
+      return element ? element.value : "";  // Return an empty string if element is not found
+    };
+    
+
+    // Log selected category for debugging
+    const categoryId = parseInt(document.getElementById("category").value, 10);
+    console.log("Selected category:", categoryId);  // Ensure category value is correct
+
+    if (!categoryId) {
+      toast.error("Please select a valid category.");
+      return;
+    }
 
     // Gather all form data
     const formData = new FormData();
+    formData.append("category", categoryId);
+    console.log("Selected category:", document.getElementById("category").value);
     formData.append("title", document.getElementById("title").value);
-    formData.append("category", document.getElementById("category").value);
     formData.append(
       "description",
       document.getElementById("description").value
@@ -251,54 +284,50 @@ const PostAdForm = () => {
       "mobileNumber",
       document.getElementById("mobileNumber").value
     );
-    formData.append(
-      "userCountry",
-      document.getElementById("userCountry").value
-    );
+    
     formData.append("address", document.getElementById("address").value);
+    formData.append("country", getValue("country"));
+
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
 
     // Image files will be added as multipart data
     const files = document.getElementById("property-images").files;
 
-    // Append each selected image file to the form data
+    if (files.length === 0) {
+      toast.error("Please upload at least one image.");
+      return;
+    }
+
     Array.from(files).forEach((file) => {
-      formData.append("images", file); // Use 'images' as the field name
+      formData.append("images", file); 
     });
 
-    // Send the data to the server using fetch
-    fetch("http://localhost:3000/api/accommodation/add-listing", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`, // Use the actual JWT token
-      },
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Listing added successfully:", data);
-        // Show success toast and reload page
-        toast.success("Listing added successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+    try {
+      const response = await axios.post('http://localhost:3000/api/accommodation/addlisting', formData, { 
+        headers: { 
+            Authorization: `Bearer ${token}`, 
+            "Content-Type": "multipart/form-data" 
+        } 
+    });
+    
 
-        // Reload page after a short delay so user can see the toast
-        // setTimeout(() => {
-        //   window.location.reload();
-        // }, 3000);
-      })
-      .catch((error) => {
-        console.error("Error adding listing:", error);
-        // Show error toast
-        toast.error("Error adding listing. Please try again.", {
-          position: "top-right",
-          autoClose: 5000,
-        });
+      console.log("Listing added successfully:", response.data);
+      toast.success("Listing added successfully!", {
+        position: "top-right",
+        autoClose: 3000,
       });
+
+    } catch (error) {
+      console.error("Error adding listing:", error);
+      toast.error("Error adding listing. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    }finally {
+      setIsSubmitting(false);  
+    }
   };
 
   return (
@@ -333,8 +362,10 @@ const PostAdForm = () => {
                   className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">Select a category</option>
-                  <option value="1">Room</option>
-                  <option value="2">Annex</option>
+                  <option value="1">Apartment</option>
+                  <option value="3">Room</option>
+                  <option value="4">Annex</option>
+                  <option value="5">House</option>
                 </select>
               </div>
 
@@ -1061,15 +1092,8 @@ const PostAdForm = () => {
                 </div>
               </div>
 
-              {/* Terms and Conditions */}
-              {/* <div className="mb-6 flex items-center">
-                <input type="checkbox" id="terms" className="mr-2" />
-                <label htmlFor="terms" className="text-sm">
-                  I agree to Term & conditions
-                </label>
-              </div> */}
 
-              {/* Submit Button */}
+              
               <div className="text-center">
                 <button
                   type="submit"

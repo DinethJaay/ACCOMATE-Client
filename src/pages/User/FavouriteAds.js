@@ -1,126 +1,93 @@
-import React, { useState, useMemo } from 'react';
-import AdminSidebar from '../../components/Sidebar';
-import Header from '../../components/Heder';
-import { FaEye, FaPen, FaTrash } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaHeart } from 'react-icons/fa';
+import axios from 'axios';
 
-const DUMMY_DATA = [
-    { id: 1, title: 'Annex For Rent in Galle For Anyone', location: 'Wijesinghe Mw, Galle, Karapitiya', price: 'Rs25,000 (Negotiable)', date: 'February 18, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 2, title: 'Spacious Room For Rent in Colombo', location: 'Colombo, Sri Lanka', price: 'Rs50,000 (Fixed)', date: 'February 14, 2024', status: 'Approved', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 3, title: 'Cozy Room For Rent in Kandy', location: 'Kandy, Sri Lanka', price: 'Rs30,000 (Negotiable)', date: 'February 12, 2024', status: 'Rejected', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 4, title: 'Home for Rent in Colombo', location: 'Colombo, Sri Lanka', price: 'Rs45,000 (Negotiable)', date: 'February 25, 2024', status: 'Approved', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 5, title: 'Modern Apartment for Rent', location: 'Nugegoda, Sri Lanka', price: 'Rs70,000 (Fixed)', date: 'March 1, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 6, title: 'Modern Apartment for Rent', location: 'Nugegoda, Sri Lanka', price: 'Rs70,000 (Fixed)', date: 'March 1, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 7, title: 'Modern Apartment for Rent', location: 'Nugegoda, Sri Lanka', price: 'Rs70,000 (Fixed)', date: 'March 1, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 8, title: 'Modern Apartment for Rent', location: 'Nugegoda, Sri Lanka', price: 'Rs70,000 (Fixed)', date: 'March 1, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 9, title: 'Modern Apartment for Rent', location: 'Nugegoda, Sri Lanka', price: 'Rs70,000 (Fixed)', date: 'March 1, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 9, title: 'Modern Apartment for Rent', location: 'Nugegoda, Sri Lanka', price: 'Rs70,000 (Fixed)', date: 'March 1, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 9, title: 'Modern Apartment for Rent', location: 'Nugegoda, Sri Lanka', price: 'Rs70,000 (Fixed)', date: 'March 1, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 9, title: 'Modern Apartment for Rent', location: 'Nugegoda, Sri Lanka', price: 'Rs70,000 (Fixed)', date: 'March 1, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 9, title: 'Modern Apartment for Rent', location: 'Nugegoda, Sri Lanka', price: 'Rs70,000 (Fixed)', date: 'March 1, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    { id: 9, title: 'Modern Apartment for Rent', location: 'Nugegoda, Sri Lanka', price: 'Rs70,000 (Fixed)', date: 'March 1, 2024', status: 'Pending', imageUrl: 'https://via.placeholder.com/300' },
-    // more data
-];
+const FavoriteAds = () => {
+  const [favoriteAds, setFavoriteAds] = useState([]);
 
-export default function FavouriteAds() {
-    const [section, setSection] = useState('');
-    const [status, setStatus] = useState('');
-    const [search, setSearch] = useState('');
+  useEffect(() => {
+    const fetchFavoriteAds = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('Token is missing');
+          return;
+        }
 
-    const filtered = useMemo(() => {
-        return DUMMY_DATA.filter(r => {
-            if (section && !r.title.toLowerCase().includes(section.toLowerCase())) return false;
-            if (status && r.status !== status) return false;
-            if (search && !r.title.toLowerCase().includes(search.toLowerCase())) return false;
-            return true;
+        const response = await axios.get('http://localhost:3000/api/favorites', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-    }, [section, status, search]);
 
-    const handleDelete = (id) => {
-        // Handle delete logic
-        console.log(`Deleting ad with ID: ${id}`);
+        console.log('Favorites response:', response.data);
+        setFavoriteAds(response.data);
+      } catch (error) {
+        console.error('Error fetching favorite ads:', error);
+      }
     };
 
-    const handleEdit = (id) => {
-        // Handle edit logic
-        console.log(`Editing ad with ID: ${id}`);
-    };
+    fetchFavoriteAds();
+  }, []);
 
-    return (
-        <>
-            <Header />
-            <div className="flex">
-                <AdminSidebar />
+    const removeFavorite = async (acc_id) => {
+    try {
+          const token = localStorage.getItem('token');
 
-                <main className="flex-1 ml-64 pt-24 bg-gray-100 p-8 min-h-screen">
-                    <h2 className="text-2xl font-semibold mb-6">Favourite Ads</h2>
+            if (!token) {
+            console.error('Token is missing');
+            return;
+            }
 
-                    {/* Filters */}
-                    <div className="bg-white rounded-lg shadow mb-6">
-                        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium">Section</label>
-                                <input
-                                    value={section}
-                                    onChange={e => { setSection(e.target.value); }}
-                                    className="mt-1 w-full border rounded px-2 py-1"
-                                    placeholder="Search by title"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium">Status</label>
-                                <select
-                                    value={status}
-                                    onChange={e => { setStatus(e.target.value); }}
-                                    className="mt-1 w-full border rounded px-2 py-1"
-                                >
-                                    <option value="">All</option>
-                                    <option>Approved</option>
-                                    <option>Pending</option>
-                                    <option>Rejected</option>
-                                </select>
-                            </div>
-                            <div className="sm:col-span-2 lg:col-span-3">
-                                <label className="block text-sm font-medium">Search</label>
-                                <input
-                                    value={search}
-                                    onChange={e => { setSearch(e.target.value); }}
-                                    className="mt-1 w-full border rounded px-2 py-1"
-                                    placeholder="Search by title…"
-                                />
-                            </div>
-                        </div>
-                    </div>
+        const response = await axios.delete(`http://localhost:3000/api/favorites/${acc_id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            data: {
+                acc_id: acc_id, 
+            },
+            });
 
-                    {/* Ad Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6 overflow-y-auto max-h-screen">
-                        {filtered.map((ad) => (
-                            <div key={ad.id} className="bg-white rounded-lg shadow-lg p-4">
-                                <img src={ad.imageUrl} alt={ad.title} className="w-full h-40 object-cover rounded mb-4" />
-                                <h3 className="text-lg font-semibold mb-2">{ad.title}</h3>
-                                <p className="text-sm text-gray-600">{ad.location}</p>
-                                <p className="text-sm text-gray-800">{ad.price}</p>
-                                <p className="text-xs text-gray-500">{ad.date}</p>
-                                <div className="mt-4 flex justify-between items-center">
-                                    <span className={`text-xs py-1 px-3 rounded-full ${ad.status === 'Approved' ? 'bg-green-100 text-green-800' : ad.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                                        {ad.status}
-                                    </span>
-                                    <div className="flex space-x-2">
-                                        <button title="View">
-                                            <FaEye className="w-5 h-5 text-purple-600 hover:text-purple-800" />
-                                        </button>
-                                        <button title="Edit" onClick={() => handleEdit(ad.id)}>
-                                            <FaPen className="w-5 h-5 text-yellow-600 hover:text-yellow-800" />
-                                        </button>
-                                        <button title="Delete" onClick={() => handleDelete(ad.id)}>
-                                            <FaTrash className="w-5 h-5 text-red-600 hover:text-red-800" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </main>
+        console.log('Favorite removed:', response.data);
+    
+      setFavoriteAds(prevAds => prevAds.filter(ad => ad.acc_id !== acc_id));
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8 mt-10">
+      <h1 className="text-3xl font-bold mb-6">Favorite Ads</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {favoriteAds.length > 0 ? (
+          favoriteAds.map((ad) => (
+            <div key={ad.acc_id} className="bg-white rounded-2xl shadow-md overflow-hidden">
+              <img
+                src={`http://localhost:3000${ad.image_path || '/img/default-image.jpg'}`}
+                alt={ad.title}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-4">
+                <h2 className="text-xl font-semibold mb-2">{ad.title}</h2>
+                <p className="text-gray-600 mb-2 truncate">{ad.description}</p>
+                <p className="text-black-600 font-bold mb-4">Rs.{ad.price}</p>
+                <button
+                  onClick={() => removeFavorite(ad.acc_id)}
+                  className="flex items-center gap-2 text-red-500 hover:text-red-600 font-medium"
+                >
+                  <FaHeart /> Remove Favorite
+                </button>
+
+              </div>
             </div>
-        </>
-    );
-}
+          ))
+        ) : (
+          <p className="text-gray-600">No favorite ads found.</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default FavoriteAds;

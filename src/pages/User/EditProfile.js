@@ -1,38 +1,50 @@
-// src/pages/EditProfile.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Heder';
 import { PhoneIcon } from '@heroicons/react/solid';
+import userImage from "../../assets/images/user.png";
+import axios from 'axios';
+import {jwtDecode} from "jwt-decode";
 
 export default function EditProfile() {
     const navigate = useNavigate();
     const [user, setUser] = useState({
-        fullName: '',
+        name: '',
         email: '',
-        contactNumber: '',
-        whoYouAre: '',
+        phone: '',
         address: '',
-        NIC: '',
-        description: '',
-        avatarUrl: '/path/to/avatar.jpg',
+        nic: '',
     });
 
     useEffect(() => {
-        const stored = localStorage.getItem('user');
-        if (stored) {
-            const u = JSON.parse(stored);
-            setUser({
-                fullName: u.fullName || '',
-                email: u.email || '',
-                contactNumber: u.contactNumber || '',
-                whoYouAre: u.whoYouAre || '',
-                address: u.address || '',
-                NIC: u.NIC || '',
-                description: u.description || '',
-                avatarUrl: u.avatarUrl || '/path/to/avatar.jpg',
-            });
-        }
+        const fetchUserData = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://localhost:3000/api/auth/dashboard', {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+
+                const userData = response.data;
+
+                console.log('User Data:', userData);
+                setUser({
+                    name: userData.name || '',
+                    email: userData.email || '',
+                    contactNumber: userData.contactNumber || '',
+                    address: userData.address || '',
+                    nic: userData.nic || '',
+                });
+
+            } catch (err) {
+                console.error('Failed to fetch user data:', err);
+            }
+        };
+
+        fetchUserData();
     }, []);
 
     const handleChange = (e) => {
@@ -40,14 +52,44 @@ export default function EditProfile() {
         setUser((u) => ({ ...u, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // TODO: call your update-profile API with `user`
-        console.log('Updating profile:', user);
+
+        try {
+            const token = localStorage.getItem('token');
+            const decodedToken = jwtDecode(token);
+
+            const userId = decodedToken.uid; 
+
+            console.log('User ID:', userId);
+
+            const updatedUser = {
+                name: user.name,
+                email: user.email,
+                phone: user.contactNumber,
+                address: user.address,
+                nic: user.nic
+            };
+            // Send the updated data to the backend
+            const response = await axios.put(
+                `http://localhost:3000/api/auth/updates/${userId}`,
+                updatedUser,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            console.log('Updated profile:', response.data);
+             
+        } catch (err) {
+            console.error('Failed to update profile:', err);
+        }
     };
 
     const handleCancel = () => {
-        navigate(-1);
+        navigate(-1); // Go back to previous page without saving
     };
 
     return (
@@ -64,12 +106,12 @@ export default function EditProfile() {
                             <div className="bg-white rounded-lg shadow p-6">
                                 <div className="text-center">
                                     <img
-                                        src={user.avatarUrl}
+                                        src={userImage}
                                         alt="avatar"
                                         className="mx-auto w-24 h-24 rounded-full mb-4"
                                     />
                                     <h3 className="text-xl font-semibold">
-                                        {user.fullName || 'Your Name'}
+                                        {user.name || 'Your Name'}
                                     </h3>
                                     <p className="text-gray-500">
                                         {user.email || 'email@example.com'}
@@ -106,7 +148,7 @@ export default function EditProfile() {
                                                 id="fullName"
                                                 name="fullName"
                                                 type="text"
-                                                value={user.fullName}
+                                                value={user.name}
                                                 onChange={handleChange}
                                                 placeholder="Enter your name"
                                                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -151,24 +193,6 @@ export default function EditProfile() {
                                             />
                                         </div>
 
-                                        {/* Who you are */}
-                                        <div>
-                                            <label
-                                                htmlFor="whoYouAre"
-                                                className="block text-sm font-medium mb-1"
-                                            >
-                                                Who you are
-                                            </label>
-                                            <input
-                                                id="whoYouAre"
-                                                name="whoYouAre"
-                                                type="text"
-                                                value={user.whoYouAre}
-                                                onChange={handleChange}
-                                                placeholder="Enter who you are"
-                                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            />
-                                        </div>
 
                                         {/* Address */}
                                         <div>
@@ -201,7 +225,7 @@ export default function EditProfile() {
                                                 id="NIC"
                                                 name="NIC"
                                                 type="text"
-                                                value={user.NIC}
+                                                value={user.nic}
                                                 onChange={handleChange}
                                                 placeholder="Input text"
                                                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -209,24 +233,6 @@ export default function EditProfile() {
                                         </div>
                                     </div>
 
-                                    {/* Description */}
-                                    <div>
-                                        <label
-                                            htmlFor="description"
-                                            className="block text-sm font-medium mb-1"
-                                        >
-                                            Description
-                                        </label>
-                                        <textarea
-                                            id="description"
-                                            name="description"
-                                            rows={4}
-                                            value={user.description}
-                                            onChange={handleChange}
-                                            placeholder="Input text"
-                                            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                        />
-                                    </div>
 
                                     {/* Buttons */}
                                     <div className="flex space-x-4 pt-4">

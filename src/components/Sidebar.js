@@ -13,13 +13,12 @@ import {
 } from 'react-icons/fa';
 
 const menu = [
-    { name: 'Dashboard',     icon: FaTachometerAlt, path: 'user/dashboard' },
-    { name: 'My Account',    icon: FaUser,           path: '/account' },
-    { name: 'Edit Profile',  icon: FaEdit,           path: 'user/edit-profile' },
-    { name: 'View Profile',  icon: FaEye,            path: 'user/view-profile' },
+    { name: 'Dashboard',     icon: FaTachometerAlt, path: '/user/user-dashboard' },
+    // { name: 'My Account',    icon: FaUser,           path: '/user/account' },
+    { name: 'Edit Profile',  icon: FaEdit,           path: '/user/edit-profile' },
     { name: 'Manage My Ads', icon: FaClipboardList,  path: '/user/my-ads' },
     { name: 'Favourite Ads', icon: FaHeart,          path: '/user/favourite-ads' },
-    { name: 'My Messages',   icon: FaEnvelope,       path: '/messages' },
+    // { name: 'My Messages',   icon: FaEnvelope,       path: '/messages' },
 ];
 
 export default function Sidebar() {

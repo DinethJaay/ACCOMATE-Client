@@ -56,7 +56,7 @@ const Header = () => {
                     {["Home", "Rooms", "Annex", "House"].map((label) => (
                         <Link
                             key={label}
-                            to={`/${label.toLowerCase()}`}
+                            to={label === "Home" ? "/" : `/${label.toLowerCase()}`}  
                             className="block px-4 py-2 hover:text-yellow-400 md:py-0"
                         >
                             {label}
@@ -96,19 +96,31 @@ const Header = () => {
                                             Logout
                                         </button>
                                         <Link
-                                            to="/my-ads"
+                                            to="/user/search-ads"
+                                            className="block px-4 py-2 hover:bg-gray-100"
+                                        >
+                                            Search ads
+                                        </Link>
+                                        <Link
+                                            to="/user/my-ads"
                                             className="block px-4 py-2 hover:bg-gray-100"
                                         >
                                             My Ads
                                         </Link>
                                         <Link
-                                            to="/saved-ads"
+                                            to="/user/favourite-ads"
                                             className="block px-4 py-2 hover:bg-gray-100"
                                         >
                                             Saved Ads
                                         </Link>
                                         <Link
-                                            to="/user-dashboard"
+                                            to="/user/predict"
+                                            className="block px-4 py-2 hover:bg-gray-100"
+                                        >
+                                            AI Search Ads
+                                        </Link>
+                                        <Link
+                                            to="/user/user-dashboard"
                                             className="block px-4 py-2 hover:bg-gray-100"
                                         >
                                             Dashboard

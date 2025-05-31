@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import Header from "../../components/Heder";
-;
+import Footer from "../../components/Footer";
+import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import { Link } from 'react-router-dom';
 
 
 const AccommodationSearch = () => {
@@ -15,8 +18,7 @@ const AccommodationSearch = () => {
         yr_built: "",
         yr_renovated: "",
         country: "Sri Lanka",
-        price: "",
-        bathrooms: ""
+        price: ""
     });
 
     const [predictedResults, setPredictedResults] = useState([]);
@@ -24,66 +26,111 @@ const AccommodationSearch = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        
+        // Convert numbers where necessary (including bathrooms)
+        const newValue = ['sqft_living', 'sqft_lot', 'sqft_above', 'sqft_basement', 'yr_built', 'yr_renovated', 'price', 'bathrooms'].includes(name) 
+            ? parseFloat(value) 
+            : value;
+    
         setFormData({
             ...formData,
-            [name]: value
+            [name]: newValue
         });
     };
+    
+    
 
     const handleCheckboxChange = (e) => {
         const { name, checked } = e.target;
-        setFormData({
-            ...formData,
-            [name]: checked ? 1 : 0
-        });
-    };
+        setFormData((prevData) => ({
+          ...prevData,
+          [name]: checked,
+        }));
+      };
 
-    const handlePredict = (e) => {
+    const handlePredict = async (e) => {
         e.preventDefault();
-        // In a real app, this would call an API to get predictions
-        // For this example, we'll use mock data
-        const mockResults = [
-            {
-                id: 1,
-                title: "Sharing Rooms Annex for Rent in Galle for Girls",
-                location: "Maradana Road, Galle 06",
-                price: "Rs 12,500 / Month",
-                date: "February 19, 2024",
-                image: "/api/placeholder/300/200",
-                negotiable: true
-            },
-            {
-                id: 2,
-                title: "Single Room for Rent in Galle for anyone",
-                location: "Galle Harbour Boulevard, Galle 3",
-                price: "Rs 20,000 / Month",
-                date: "February 18, 2024",
-                image: "/api/placeholder/300/200",
-                negotiable: true
-            },
-            {
-                id: 3,
-                title: "Annex For Rent in Galle For Anyone",
-                location: "Matugama Rd, Galle, Pinwaththa",
-                price: "Rs 25,000 / Negotiable",
-                date: "February 18, 2024",
-                image: "/api/placeholder/300/200",
-                negotiable: true
-            },
-            {
-                id: 4,
-                title: "Annex for Rent in Galle For a Couple or Girls",
-                location: "Marine road, Katugoda, Galle",
-                price: "Rs 15,500 / Negotiable",
-                date: "February 18, 2024",
-                image: "/api/placeholder/300/200",
-                negotiable: true
+        
+        // Ensure all fields are filled in (optional validation)
+        if (!formData.sqft_living || !formData.sqft_lot || !formData.waterfront || !formData.view || !formData.condition || !formData.sqft_above || !formData.sqft_basement || !formData.yr_built || !formData.yr_renovated || !formData.price || !formData.bathrooms) {
+            toast.error("Please fill in all the required fields.");
+            return;
+        }
+    
+        // Add Accessibility and Property Features to the form data
+        const extendedFormData = {
+            ...formData,
+            ground_floor: formData.ground_floor ? 1 : 0,
+            nosteps: formData.nosteps ? 1 : 0,
+            grabbars: formData.grabbars ? 1 : 0,
+            wheelchair: formData.wheelchair ? 1 : 0,
+            singlebeds: formData.singlebeds ? 1 : 0,
+            doublebeds: formData.doublebeds ? 1 : 0,
+            pantry: formData.pantry ? 1 : 0,
+            kitchen: formData.kitchen ? 1 : 0,
+            livingroom: formData.livingroom ? 1 : 0,
+            cctv: formData.cctv ? 1 : 0,
+            seperateentrance: formData.seperateentrance ? 1 : 0,
+            furnished: formData.furnished ? 1 : 0,
+            brandnew: formData.brandnew ? 1 : 0
+        };
+    
+        console.log("Sending the following data to the backend:", extendedFormData);
+    
+        try {
+            // Send the form data to the AI model to get predictions
+            const predictionResponse = await axios.post("http://127.0.0.1:5003/predict", formData);
+            console.log("Model Prediction Response:", predictionResponse.data);
+    
+            const { predictions } = predictionResponse.data;
+            console.log(predictions);
+    
+            // Combine predictions with the extended form data
+            const combinedData = {
+                ...extendedFormData,
+                predictedCity: predictions.city,
+                predictedBedrooms: predictions.bedrooms,
+                predictedFloors: predictions.floors,
+            };
+            console.log("Request sent to backend:", combinedData);
+    
+            // Now, send this combined data to the backend to check for similar accommodations
+            const similarAccommodationsResponse = await axios.post("http://localhost:3000/api/accommodation/find", combinedData);
+            
+            // Check if the response is OK (200)
+            if (similarAccommodationsResponse.status === 200) {
+                console.log("Similar Accommodations Response:", similarAccommodationsResponse.data);
+    
+                const similarAccommodations = similarAccommodationsResponse.data.accommodations || [];
+                console.log(similarAccommodations);
+    
+                if (similarAccommodations.length === 0) {
+                    setPredictedResults([]);
+                    setShowResults(true);
+                    toast.info("No similar accommodations found.");
+                } else {
+                    setPredictedResults(similarAccommodations.map((accommodation) => ({
+                        acc_id: accommodation.acc_id,
+                        title: `Accommodation in ${accommodation.city}`,
+                        location: accommodation.city,
+                        price: `Rs ${accommodation.price}`,
+                        date: new Date(accommodation.created_at).toLocaleDateString(),
+                        image: `http://localhost:3000${accommodation.image_path || '/default-image.jpg'}` || "/api/placeholder/300/200",
+                        negotiable: true
+                    })));
+                    setShowResults(true);
+                }
+            } else {
+                throw new Error("Failed to fetch similar accommodations");
             }
-        ];
-
-        setPredictedResults([...mockResults, ...mockResults]); // Duplicate to show more results
-        setShowResults(true);
+        } catch (error) {
+            console.error("Error fetching prediction or similar accommodations:", error);
+            toast.error("Error fetching predictions or similar accommodations. Please try again.");
+        }
     };
+    
+    
+    
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-100">
@@ -210,171 +257,8 @@ const AccommodationSearch = () => {
                                 </div>
                             </div>
 
-                            {/* Accessibility Features */}
-                            <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Accessibility features
-                                </label>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="ground-floor" className="mr-2" />
-                                        <label htmlFor="ground-floor">Ground Floor</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="elevator" className="mr-2" />
-                                        <label htmlFor="elevator">Elevator/ Chair</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="wide-door" className="mr-2" />
-                                        <label htmlFor="wide-door">Wide Door</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="no-steps" className="mr-2" />
-                                        <label htmlFor="no-steps">No Steps</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* For Whom */}
-                            <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    For Whom
-                                </label>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="university-boys" className="mr-2" />
-                                        <label htmlFor="university-boys">For University Boys</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="university-workers" className="mr-2" />
-                                        <label htmlFor="university-workers">For Girls and Workers</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="professional-lady" className="mr-2" />
-                                        <label htmlFor="professional-lady">For Professional Lady</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="professional-gent" className="mr-2" />
-                                        <label htmlFor="professional-gent">For Professional Gent</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="for-couple" className="mr-2" />
-                                        <label htmlFor="for-couple">For a Couple</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="for-family" className="mr-2" />
-                                        <label htmlFor="for-family">For a Family</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* No Of Rooms */}
-                            <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    No Of Rooms
-                                </label>
-                                <input
-                                    type="number"
-                                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                />
-                            </div>
-
-                            {/* No Of Bathrooms */}
-                            <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    No Of Bathrooms
-                                </label>
-                                <input
-                                    type="number"
-                                    name="bathrooms"
-                                    value={formData.bathrooms}
-                                    onChange={handleInputChange}
-                                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                />
-                            </div>
-
-                            {/* Bathroom Type */}
-                            <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Bathroom Type
-                                </label>
-                                <select
-                                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    defaultValue=""
-                                >
-                                    <option value="" disabled>Select an option</option>
-                                    <option value="attached">Attached</option>
-                                    <option value="common">Common</option>
-                                </select>
-                            </div>
-
-                            {/* Floor */}
-                            <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Floor
-                                </label>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="ground" className="mr-2" />
-                                        <label htmlFor="ground">Ground floor</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="upstairs" className="mr-2" />
-                                        <label htmlFor="upstairs">Upstairs</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Time Period */}
-                            <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Time Period
-                                </label>
-                                <div className="grid grid-cols-1 gap-2">
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="short-term" className="mr-2" />
-                                        <label htmlFor="short-term">Short Term period</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="long-term" className="mr-2" />
-                                        <label htmlFor="long-term">Long Term only</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="short-long" className="mr-2" />
-                                        <label htmlFor="short-long">Short Term or Long Term accept</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Electricity and Water Bill */}
-                            <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Electricity and Water Bill
-                                </label>
-                                <div className="grid grid-cols-1 gap-2">
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="included" className="mr-2" />
-                                        <label htmlFor="included">Included in Rent</label>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <input type="checkbox" id="charged" className="mr-2" />
-                                        <label htmlFor="charged">Charged separately (according bill number)</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Deposit */}
-                            <div className="mt-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Deposit
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter info"
-                                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                />
-                            </div>
-
+                            
+                            
                             {/* Main Fields Section */}
                             <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
                                 <h3 className="text-lg font-semibold mb-4 text-blue-800">Advanced Search Criteria</h3>
@@ -508,141 +392,186 @@ const AccommodationSearch = () => {
                                             name="country"
                                             value={formData.country}
                                             onChange={handleInputChange}
-                                            placeholder="Sri Lanka"
+                                            placeholder="2"
+                                            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Bathrooms
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="bathrooms"
+                                            value={formData.bathrooms}
+                                            onChange={handleInputChange}
+                                            placeholder="No of bathrooms"
                                             className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Additional Filters Section */}
-                            <div className="mt-6">
-                                <div className="grid grid-cols-3 gap-4">
-                                    {/* Parking spaces */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Parking spaces
-                                        </label>
-                                        <div className="flex flex-col space-y-1">
-                                            <div className="flex items-center">
-                                                <input type="checkbox" id="bike-car" className="mr-1" />
-                                                <label htmlFor="bike-car" className="text-sm">Bike and Car</label>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <input type="checkbox" id="bike-only" className="mr-1" />
-                                                <label htmlFor="bike-only" className="text-sm">Bike only</label>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <input type="checkbox" id="bike-van" className="mr-1" />
-                                                <label htmlFor="bike-van" className="text-sm">Bike and Van</label>
-                                            </div>
-                                        </div>
-                                    </div>
+                            {/* Accesibiliy Features */}
 
-                                    {/* Availability */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Availability
-                                        </label>
-                                        <div className="flex flex-col space-y-1">
-                                            <div className="flex items-center">
-                                                <input type="checkbox" id="available-now" className="mr-1" />
-                                                <label htmlFor="available-now" className="text-sm">Available now</label>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <input type="checkbox" id="available-soon" className="mr-1" />
-                                                <label htmlFor="available-soon" className="text-sm">Available Soon</label>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <input type="checkbox" id="without-furniture" className="mr-1" />
-                                                <label htmlFor="without-furniture" className="text-sm">Without Furniture</label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Single Beds */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Single Beds
-                                        </label>
-                                        <div className="flex flex-col space-y-1">
-                                            <div className="flex items-center">
-                                                <input type="checkbox" id="single" className="mr-1" />
-                                                <label htmlFor="single" className="text-sm">Single</label>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <input type="checkbox" id="double" className="mr-1" />
-                                                <label htmlFor="double" className="text-sm">Double</label>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <input type="checkbox" id="semi-furnished" className="mr-1" />
-                                                <label htmlFor="semi-furnished" className="text-sm">Semi Furnished</label>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div className="mb-6 mt-10">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Accessibility Features
+                                </label>
+                                <div className="space-y-2">
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="ground_floor"
+                                    name="ground_floor"
+                                    checked={!!formData.ground_floor}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="ground_floor">Ground floor</label>
                                 </div>
-
-                                <div className="grid grid-cols-3 gap-4 mt-4">
-                                    <div className="flex flex-col space-y-1">
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="kitchen" className="mr-1" />
-                                            <label htmlFor="kitchen" className="text-sm">Kitchen</label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="bunk-beds" className="mr-1" />
-                                            <label htmlFor="bunk-beds" className="text-sm">Bunk Beds</label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="parking-indoor" className="mr-1" />
-                                            <label htmlFor="parking-indoor" className="text-sm">Parking (Indoor)</label>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col space-y-1">
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="pantry" className="mr-1" />
-                                            <label htmlFor="pantry" className="text-sm">Pantry</label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="balcony" className="mr-1" />
-                                            <label htmlFor="balcony" className="text-sm">Balcony</label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="fully-furnished" className="mr-1" />
-                                            <label htmlFor="fully-furnished" className="text-sm">Fully Furnished</label>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col space-y-1">
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="internet" className="mr-1" />
-                                            <label htmlFor="internet" className="text-sm">Internet</label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="living-room" className="mr-1" />
-                                            <label htmlFor="living-room" className="text-sm">Living Room</label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="separate-study" className="mr-1" />
-                                            <label htmlFor="separate-study" className="text-sm">Separate Study Room</label>
-                                        </div>
-                                    </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="nosteps"
+                                    name="nosteps"
+                                    checked={!!formData.nosteps}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="nosteps">No step</label>
                                 </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="grabbars"
+                                    name="grabbars"
+                                    checked={!!formData.grabbars}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="grabbars">Grab bars</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="wheelchair"
+                                    name="wheelchair"
+                                    checked={!!formData.wheelchair}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="wheelchair">Wheelchair accessible</label>
+                                </div>
+                                </div>
+                            </div>
 
-                                <div className="grid grid-cols-3 gap-4 mt-4">
-                                    <div className="flex flex-col space-y-1">
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="water" className="mr-1" />
-                                            <label htmlFor="water" className="text-sm">Water</label>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col space-y-1">
-                                        <div className="flex items-center">
-                                            <input type="checkbox" id="separate-entrance" className="mr-1" />
-                                            <label htmlFor="separate-entrance" className="text-sm">Separate entrance</label>
-                                        </div>
-                                    </div>
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-4">
+                                Property Features
+                                </label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="singlebeds"
+                                    name="singlebeds"
+                                    checked={!!formData.singlebeds}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="singlebeds">Single Beds</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="doublebeds"
+                                    name="doublebeds"
+                                    checked={!!formData.doublebeds}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="doublebeds">Double Beds</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="pantry"
+                                    name="pantry"
+                                    checked={!!formData.pantry}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="pantry">Pantry</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="kitchen"
+                                    name="kitchen"
+                                    checked={!!formData.kitchen}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="kitchen">Kitchen</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="livingroom"
+                                    name="livingroom"
+                                    checked={!!formData.livingroom}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="livingroom">Living Room</label>
+                                    <span className="text-xs text-gray-500 ml-2">(TV / TV Room)</span>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="cctv"
+                                    name="cctv"
+                                    checked={!!formData.cctv}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="cctv">CCTV Camera</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="separateentrance"
+                                    name="separateentrance"
+                                    checked={!!formData.separateentrance}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="separateentrance">Separate entrance</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="furnished"
+                                    name="furnished"
+                                    checked={!!formData.furnished}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="furnished">Furnished</label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                    type="checkbox"
+                                    id="brandnew"
+                                    name="brandnew"
+                                    checked={!!formData.brandnew}
+                                    onChange={handleCheckboxChange}
+                                    className="mr-2"
+                                    />
+                                    <label htmlFor="brandnew">Brand New</label>
+                                </div>
                                 </div>
                             </div>
 
@@ -659,11 +588,15 @@ const AccommodationSearch = () => {
                     </div>
 
                     {/* Results Section */}
-                    {showResults && (
+                    {showResults && predictedResults.length === 0 ? (
+                            <div className="text-center mt-8">
+                                <p>No similar accommodations found.</p>
+                            </div>
+                        ) : (
                         <div className="mt-8">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {predictedResults.map((result, index) => (
-                                    <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden">
+                                {predictedResults.map((result) => (
+                                    <div key={result.acc_id} className="bg-white rounded-lg shadow-md overflow-hidden">
                                         <div className="relative">
                                             <img
                                                 src={result.image}
@@ -671,9 +604,9 @@ const AccommodationSearch = () => {
                                                 className="w-full h-48 object-cover"
                                             />
                                             <div className="absolute bottom-2 left-2">
-                        <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
-                          {result.location.split(',')[1]?.trim()}
-                        </span>
+                                                <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded">
+                                                    {result.location}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className="p-4">
@@ -686,11 +619,21 @@ const AccommodationSearch = () => {
                                                 <span className="text-xs text-gray-500">{result.date}</span>
                                             </div>
                                         </div>
+                                        <div className="px-4 pb-4">
+                                            {result.acc_id ? (
+                                                <Link to={`/accommodation/${result.acc_id}`} className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded transition-colors duration-300">
+                                                    View Details
+                                                </Link>
+                                            ) : (
+                                                <p>Invalid ID</p>  
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
+
                 </div>
             </main>
 

@@ -3,47 +3,86 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/AdminSidebar';
 import Header from '../../components/Heder';
+import axios from 'axios';
 import { PhoneIcon } from '@heroicons/react/solid';
 
 export default function AdminEditProfile() {
     const navigate = useNavigate();
     const [user, setUser] = useState({
-        fullName: '',
+        name: '',
         email: '',
         contactNumber: '',
-        whoYouAre: '',
         address: '',
-        NIC: '',
-        description: '',
-        avatarUrl: '/path/to/avatar.jpg',
+        nic: '',
     });
 
+
+
     useEffect(() => {
-        const stored = localStorage.getItem('user');
-        if (stored) {
-            const u = JSON.parse(stored);
-            setUser({
-                fullName: u.fullName || '',
-                email: u.email || '',
-                contactNumber: u.contactNumber || '',
-                whoYouAre: u.whoYouAre || '',
-                address: u.address || '',
-                NIC: u.NIC || '',
-                description: u.description || '',
-                avatarUrl: u.avatarUrl || '/path/to/avatar.jpg',
+    const fetchUsers = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('Token is missing');
+                return;
+            }
+            const response = await axios.get('http://localhost:3000/api/auth/dashboard', {
+                headers: { Authorization: `Bearer ${token}` },
             });
+
+            console.log('Fetched user:', response.data);
+
+            if (response.data) {
+                setUser(response.data); 
+            } else {
+                console.error('No user data found');
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
         }
-    }, []);
+    };
+
+    fetchUsers();
+}, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setUser((u) => ({ ...u, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+     const handleSubmit = async (e) => {
         e.preventDefault();
-        // TODO: call your update-profile API with `user`
-        console.log('Updating profile:', user);
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('Token is missing');
+                return;
+            }
+
+           const updatedUser = {
+            name: user.name,
+            email: user.email,
+            contactNumber: user.contactNumber,
+            address: user.address,
+            nic: user.nic,
+        };
+
+        console.log('Sending to backend:', updatedUser);
+
+            const response = await axios.put(`http://localhost:3000/api/auth/update-profile/${updatedUser.uId}`, updatedUser, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.status === 200) {
+                setUser({ ...user, ...updatedUser });
+                
+                console.log('Profile updated successfully:', response.data);
+                alert('Profile updated successfully!');
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+        }
     };
 
     const handleCancel = () => {
@@ -60,8 +99,8 @@ export default function AdminEditProfile() {
                 <main className="flex-1 ml-64 bg-gray-100 p-6 min-h-[calc(100vh-4rem)] flex items-center justify-center">
                     <div className="w-full max-w-7xl">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Left: Profile & Contact */}
-                            <div className="bg-white rounded-lg shadow p-6">
+                            
+                            {/* <div className="bg-white rounded-lg shadow p-6">
                                 <div className="text-center">
                                     <img
                                         src={user.avatarUrl}
@@ -87,26 +126,26 @@ export default function AdminEditProfile() {
                                         {user.contactNumber || '0762050235'}
                                     </p>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Right: Edit Form */}
-                            <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
+                            <div className="lg:col-span-2 bg-white rounded-lg shadow p-6 mt-20">
                                 <h2 className="text-2xl font-semibold mb-6">Edit Profile</h2>
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {/* Full Name */}
                                         <div>
                                             <label
-                                                htmlFor="fullName"
+                                                htmlFor="name"
                                                 className="block text-sm font-medium mb-1"
                                             >
                                                 Full Name
                                             </label>
                                             <input
-                                                id="fullName"
-                                                name="fullName"
+                                                id="name"
+                                                name="name"
                                                 type="text"
-                                                value={user.fullName}
+                                                value={user.name}
                                                 onChange={handleChange}
                                                 placeholder="Enter your name"
                                                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -132,7 +171,7 @@ export default function AdminEditProfile() {
                                             />
                                         </div>
 
-                                        {/* Contact Number */}
+                                       
                                         <div>
                                             <label
                                                 htmlFor="contactNumber"
@@ -151,26 +190,7 @@ export default function AdminEditProfile() {
                                             />
                                         </div>
 
-                                        {/* Who you are */}
-                                        <div>
-                                            <label
-                                                htmlFor="whoYouAre"
-                                                className="block text-sm font-medium mb-1"
-                                            >
-                                                Who you are
-                                            </label>
-                                            <input
-                                                id="whoYouAre"
-                                                name="whoYouAre"
-                                                type="text"
-                                                value={user.whoYouAre}
-                                                onChange={handleChange}
-                                                placeholder="Enter who you are"
-                                                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            />
-                                        </div>
-
-                                        {/* Address */}
+                                        
                                         <div>
                                             <label
                                                 htmlFor="address"
@@ -192,16 +212,16 @@ export default function AdminEditProfile() {
                                         {/* NIC */}
                                         <div>
                                             <label
-                                                htmlFor="NIC"
+                                                htmlFor="nic"
                                                 className="block text-sm font-medium mb-1"
                                             >
                                                 NIC
                                             </label>
                                             <input
-                                                id="NIC"
-                                                name="NIC"
+                                                id="nic"
+                                                name="nic"
                                                 type="text"
-                                                value={user.NIC}
+                                                value={user.nic}
                                                 onChange={handleChange}
                                                 placeholder="Input text"
                                                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -209,8 +229,8 @@ export default function AdminEditProfile() {
                                         </div>
                                     </div>
 
-                                    {/* Description */}
-                                    <div>
+                                   
+                                    {/* <div>
                                         <label
                                             htmlFor="description"
                                             className="block text-sm font-medium mb-1"
@@ -226,7 +246,7 @@ export default function AdminEditProfile() {
                                             placeholder="Input text"
                                             className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         />
-                                    </div>
+                                    </div> */}
 
                                     {/* Buttons */}
                                     <div className="flex space-x-4 pt-4">

@@ -10,10 +10,9 @@ import {
 } from 'react-icons/fa';
 
 const adminMenu = [
-    { name: 'Dashboard', icon: FaTachometerAlt, path: 'admin/dashboard' },
-    { name: 'My Account', icon: FaUser, path: '/admin/account' },
+    { name: 'Dashboard', icon: FaTachometerAlt, path: '/admin/dashboard' },
+    // { name: 'My Account', icon: FaUser, path: '/admin/account' },
     { name: 'Edit Profile', icon: FaEdit, path: '/admin/edit-profile' },
-    { name: 'View Profile', icon: FaEye, path: '/admin/view-profile' },
     { name: 'Ad Management', icon: FaClipboardList, path: '/admin/ad-management' },
     { name: 'User Management', icon: FaUsers, path: '/admin/user-management' },
 ];
